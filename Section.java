@@ -5,9 +5,11 @@
  * @version 1
  */
 public class Section {
-
+    //not done(need to add 3 bst implementation)
     private int num;
-    private BST roster;
+    private BST pid_roster;
+    private BST roster;//by name
+    private BST score_roster;
     
     /**
      * 

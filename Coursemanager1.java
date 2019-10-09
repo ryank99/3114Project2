@@ -61,7 +61,14 @@ public class Coursemanager1 {
             String func = parts[0];
             switch(func) {
                 case "loadstudentdata":{
-                    System.out.println(loadStudentData(parts[1]));
+                    
+                    //not done
+                    System.out.println(cm.loadStudentData(parts[1]));
+                }
+                case "loadcoursedata": {
+                    
+                    //not done
+                    System.out.println(cm.loadCourseData(parts[1]));
                 }
                 case "section": { 
                     System.out.println(
@@ -70,6 +77,7 @@ public class Coursemanager1 {
                     break;
                 }
                 case "insert": { 
+                    //not done
                     System.out.println(cm.insert(
                         new Name(parts[1].toLowerCase(), 
                             parts[2].toLowerCase())));
@@ -77,7 +85,9 @@ public class Coursemanager1 {
                     break;
                 }
                 case "searchid": {
-                    //search by id
+                    
+                    //not done
+                    System.out.println(cm.searchid(parts[1]));
                 }
                 case "search": {
                     if (parts.length == 2) {
@@ -100,6 +110,7 @@ public class Coursemanager1 {
                     break;
                 }
                 case "remove": { 
+                    //not done
                     System.out.println(cm.remove(
                         new Name(parts[1], parts[2]))); 
                     prevCommand = func;
@@ -118,20 +129,25 @@ public class Coursemanager1 {
                     break;
                 }
                 case "dumpsection": { 
+                    //not done
                     System.out.println(cm.dumpsection());
                     prevCommand = func;
                     break;
                 }
                 case "grade": { 
+                    //not done
                     System.out.println(cm.grade()); 
                     prevCommand = func;
                     break;
                 }
                 case "stat": {
-                    System.out.println(stat(parts[1]));
+                    //not done
+                    System.out.println(cm.stat());
                     break;
                 }
                 case "list": {
+                    //not done
+                    System.out.println(cm.list(parts[1]));
                     //how many students in specific grade level as param
                     break;
                 }
@@ -147,19 +163,23 @@ public class Coursemanager1 {
                     break;
                 }
                 case "merge": { 
+                    //not done
+                    System.out.println(cm.merge());
                     //put all nonempty sections into one empty section
                     break;
                 }
                 case "savestudentdata": {
+                    //not done
                     //save in specified binary file
                     break;
                 }
                 case "savecoursedata": {
+                    //not done
                     //save in specified binary file
                     break;
                 }
                 case "clearcoursedata": {
-          
+                       //not done
                     break;
                 }
                 default: {
@@ -187,7 +207,23 @@ public class Coursemanager1 {
      * @return string output
      */
     public String loadStudentData(String filename) {
+        
         //goes through filename and adds all student records to studentRecords BST
+        return filename + " successfully loaded";
+    }
+    
+    public String loadCourseData(String filename) {
+        boolean success = true;
+        String ret = "coursename Course has been successfully loaded";
+        //load stuff here
+        if(success) {
+            return ret;
+        }
+        else {
+            return "Course Load Failed. You have to load Student " + 
+                "Information file first.";
+        }
+        //
     }
     
     
@@ -205,6 +241,7 @@ public class Coursemanager1 {
     @SuppressWarnings("unchecked")
     public String insert(Name n) {
         //we first have to check if in the student data BST
+        //then add to all 3 BSTs for the curr section
         if (search(n).contains("failed")) {
             Student newGuy = new Student(n, generateID());
             sections[currSection - 1].getRoster().insert(newGuy);
@@ -225,6 +262,7 @@ public class Coursemanager1 {
      */
     @SuppressWarnings("unchecked")
     public String remove(Name n) {
+        //have to remove n from all 3 BSTs in the section
         if (search(n).contains("failed")) {
             return "Remove failed. Student " + n.toString() + 
                 " doesn't exist in section " + currSection;
@@ -430,12 +468,117 @@ public class Coursemanager1 {
                     " students with grade " + grades[i];
             }
         }
-        return ret;
+        return "grading completed";
         //iterate through BST and asssign grade with switch statement
     }
-    public String stat(String g) {
+    public String stat() {
+        String ret = "Statistics of section ";
+        ret += currSection-1;
+        ret += ":";
+        int count = 0;
+        String[] letterArr = {"A", "A-", "B+", "B", "B-", "C+",
+            "C", "C-", "D+", "D", "D-", "F"};
+        int[] countArr = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        @SuppressWarnings("unchecked")
+        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
+        while (me.hasNext()) {
+            Student f = me.next();
+            String currGrade = f.getGrade();
+            switch(currGrade) {
+                case "A": {
+                    countArr[0]++;
+                    break;
+
+                }
+                case "A-": {
+                    countArr[1]++;
+                    break;
+
+                }
+                case "B+": {
+                    countArr[2]++;
+                    break;
+
+                }
+                case "B": {
+                    countArr[3]++;
+                    break;
+
+                }   
+                case "B-": {
+                    countArr[4]++;
+                    break;
+
+                }
+                case "C+": {
+                    countArr[5]++;
+                    break;
+
+                }
+                case "C": {
+                    countArr[6]++;
+                    break;
+
+                }
+                case "C-": {
+                    countArr[7]++;
+                    break;
+
+                }
+                case "D+": {
+                    countArr[8]++;
+                    break;
+
+                }
+                case "D": {
+                    countArr[9]++;
+                    break;
+
+                }
+                case "D-": {
+                    countArr[10]++;
+                    break;
+
+                }
+                case "F": {
+                    countArr[11]++;
+                    break;
+
+                }
+                default: {
+                    break;
+                }
+            }
+            
+        }
+        for(int i = 0; i < letterArr.length; i++) {
+            ret += "\n" + countArr[i] + " students with grade " + letterArr[i];
+        }
         //how many students in curr section have grade g
+        
         return "";
+    }
+    
+    public String list(String g) {
+        String ret = "Students with grade " + g + " are:";
+        
+        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
+        int count = 0;
+        if(g.substring(1).equals("*")){
+            //any + or - counts
+        }
+        else {
+            while (me.hasNext()) {
+                Student f = me.next();
+                String currGrade = f.getGrade();
+                if (currGrade.equals(g)) {
+                    ret += "\n" + f.toString();
+                    count++;
+                }
+            }
+        }
+        ret += "Found " + count + " students";
+        return ret;
     }
     /**
      * Finds pairs of students with differences 
@@ -472,22 +615,5 @@ public class Coursemanager1 {
      * Generates a unique ID for the current section
      * @return id formatted
      */
-    public String generateID() {
-        String id = "";
-        if (sections.length < 10) {
-            id += "0" + currSection;
-        }
-        int num = sections[currSection - 1].getRoster().getElements() + 1;
-        if (num < 10) {
-            id += "000";
-        }
-        else if (num < 100) {
-            id += "00";
-        }
-        else {
-            id += "0";
-        }
-        id += (sections[currSection - 1].getRoster().getElements() + 1);
-        return id;
-    }
+
 }
