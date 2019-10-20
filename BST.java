@@ -43,6 +43,10 @@ public class BST<T extends Comparable<? super T>>
         root = insert(x, root);
 
     }
+    
+    public void insert(T x, int index) {
+        root = insert(x, root, index);
+    }
 
 
     // ----------------------------------------------------------
@@ -57,6 +61,14 @@ public class BST<T extends Comparable<? super T>>
             makeEmpty();
         }
         root = remove(x, root);
+
+    }
+    
+    public void remove(T x, int index) {
+        if (x.equals(root)) {
+            makeEmpty();
+        }
+        root = remove(x, root, index);
 
     }
 
@@ -93,6 +105,10 @@ public class BST<T extends Comparable<? super T>>
      */
     public T find(T x) {
         return elementAt(find(x, root));
+    }
+    
+    public T find(T x, int index) {
+        return elementAt(find(x, root, index));
     }
 
 
@@ -157,6 +173,31 @@ public class BST<T extends Comparable<? super T>>
         }
         return node;
     }
+    
+    private BinaryNode<T> insert(T x, BinaryNode<T> node, int index) {
+        if (node == null) {
+            elements++;
+            actualElements++;
+            return new BinaryNode<T>(x, index);
+        }
+        else if (x.compareTo(node.getElement()) < 0) {
+            node.setLeft(insert(x, node.getLeft()));
+        }
+        else if (x.compareTo(node.getElement()) > 0) {
+            node.setRight(insert(x, node.getRight()));
+        }
+        else if (index < node.getIndex()) {
+            node.setLeft(insert(x, node.getLeft()));
+        }
+        else if (index > node.getIndex()){
+            node.setRight(insert(x, node.getLeft()));
+        }
+        else 
+            return null;
+        
+        return node;
+    }
+    
 
 
     // ----------------------------------------------------------
@@ -203,6 +244,57 @@ public class BST<T extends Comparable<? super T>>
             else {
                 result = node.getRight();
             }
+        }
+        actualElements--;
+        return result;
+    }
+    
+    
+    private BinaryNode<T> remove(T x, BinaryNode<T> node, int index) {
+        // This local variable will contain the new root of the subtree,
+        // if the root needs to change.
+        BinaryNode<T> result = node;
+
+        // If there's no more subtree to examine
+        if (node == null) {
+            return null;
+        }
+
+        // if value should be to the left of the root
+        if (x.compareTo(node.getElement()) < 0) {
+            node.setLeft(remove(x, node.getLeft()));
+        }
+        // if value should be to the right of the root
+        else if (x.compareTo(node.getElement()) > 0) {
+            node.setRight(remove(x, node.getRight()));
+        }
+        // If value is on the current node
+        else {
+            if (node.getIndex() < index) {
+                node.setLeft(remove(x, node.getLeft()));
+            }
+            else if(node.getIndex() > index) {
+                node.setRight(remove(x, node.getLeft()));
+            }
+            else {
+             // If there are two children
+                if (node.getLeft() != null && node.getRight() != null) {
+                    BinaryNode<T> tempMin = findMin(node.getRight());
+                    remove(tempMin.getElement(), tempMin.getIndex());
+                    node.setElement(tempMin.getElement());
+                    node.setIndex(tempMin.getIndex());
+                }
+                // If there is only one child on the left
+                else if (node.getLeft() != null) {
+                    result = node.getLeft();
+                }
+                // If there is only one child on the right
+                else {
+                    result = node.getRight();
+                }
+            }
+            
+            
         }
         actualElements--;
         return result;
@@ -278,6 +370,29 @@ public class BST<T extends Comparable<? super T>>
         }
     }
     
+    
+    private BinaryNode<T> find(T x, BinaryNode<T> node, int index) {
+        if (node == null) {
+            return null; // Not found
+        }
+        else if (x.compareTo(node.getElement()) < 0) {
+            // Search in the left subtree
+            return find(x, node.getLeft(), index);
+        }
+        else if (x.compareTo(node.getElement()) > 0) {
+            // Search in the right subtree
+            return find(x, node.getRight(), index);
+        }
+        else if (index < node.getIndex()) {
+            return find(x, node.getLeft(), index);
+        }
+        else if (index > node.getIndex()) {
+            return find(x, node.getRight(), index);
+        }
+        else {
+            return node; // Match
+        }
+    }
     /**
      * 
      * @return sdf

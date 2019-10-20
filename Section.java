@@ -6,17 +6,23 @@
  */
 public class Section {
     //not done(need to add 3 bst implementation)
+    private Student[] students;
+    int currSpot;
+    
     private int num;
-    private BST pid_roster;
-    private BST roster;//by name
-    private BST score_roster;
+    private BST<String> pid_roster;
+    private BST<Name> name_roster;//by name
+    private BST<Integer> score_roster;
     
     /**
      * 
      * @param i section id
      */
     public Section(int i) {
-        roster = new BST();
+        currSpot = 0;
+        name_roster = new BST<Name>();
+        pid_roster = new BST<String>();
+        score_roster = new BST<Integer>();
         num = i;
     }
     

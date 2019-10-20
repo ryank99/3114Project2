@@ -12,7 +12,7 @@
 class BinaryNode<T>
 {
   //~ Instance/static variables .............................................
-
+    private int index;
     private T element;
     private BinaryNode<T> left;
     private BinaryNode<T> right;
@@ -30,6 +30,21 @@ class BinaryNode<T>
         element = theElement;
         left = null;
         right = null;
+    }
+    
+    BinaryNode(T theElement, int index){
+        this.index = index;
+        element = theElement;
+        left = null;
+        right = null;
+    }
+    
+    public int getIndex() {
+        return index;
+    }
+    
+    public void setIndex(int n) {
+        index = n;
     }
 
 

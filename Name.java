@@ -4,7 +4,7 @@
  * @author Ryan Kirkpatrick
  * @version 1
  */
-public class Name implements Comparable {
+public class Name implements Comparable<Name> {
     private String first;
     private String last;
     
@@ -46,7 +46,7 @@ public class Name implements Comparable {
      * @param n object to compare
      * @return the int. >1 if bigger, <1 less, 0 if equal. 
      */
-    public int compareTo(Object n) {
+    public int compareTo(Name n) {
         if (n instanceof Name) {
             if (this.last.compareTo( ((Name)n).getLast() ) == 0) {
                 return this.first.compareTo( ((Name)n).getFirst());
@@ -57,6 +57,9 @@ public class Name implements Comparable {
         }
         return 99;
     }
+
+    
+
 
   
 }
