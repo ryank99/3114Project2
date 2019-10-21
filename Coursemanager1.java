@@ -14,12 +14,16 @@ public class Coursemanager1 {
     private Section[] sections;
     private int currSection = 1;
     private Student currStudent;
-    private BST studentData;
+    private static Student[] studentData;
+    private boolean studentDataLoaded = false;
+    private int curr;
     
     /**
      * Creates a Coursemanager1 object
      */
     public Coursemanager1() {
+        studentData = new Student[500];
+        curr = 0;
         sections = new Section[21];
         //section 21 is temp section for merging
         for (int i = 0; i < sections.length; i++) {
@@ -30,8 +34,9 @@ public class Coursemanager1 {
     /**
      * main method
      * @param args input
+     * @throws Exception 
      */
-    public static void main(String[] args) 
+    public static void main(String[] args) throws Exception 
     {
         if (args.length != 1) {
             throw(new Error("Invalid number of program arguments"));
@@ -57,16 +62,18 @@ public class Coursemanager1 {
         }
         
         while (line != null) {
+            System.out.println(line);
             String[] parts = line.split("\\s+");
             String func = parts[0];
             switch(func) {
                 case "loadstudentdata":{
-                    
-                    //not done
+                    //done
+                    System.out.println(parts[1]);
                     System.out.println(cm.loadStudentData(parts[1]));
                 }
                 case "loadcoursedata": {
-                    
+                    System.out.println("in here");
+                    System.out.println(line);
                     //not done
                     System.out.println(cm.loadCourseData(parts[1]));
                 }
@@ -77,10 +84,8 @@ public class Coursemanager1 {
                     break;
                 }
                 case "insert": { 
-                    //not done
-                    System.out.println(cm.insert(
-                        new Name(parts[1].toLowerCase(), 
-                            parts[2].toLowerCase())));
+                    //done
+                    System.out.println(cm.insert(new Name(parts[2].toLowerCase(), parts[3].toLowerCase()), parts[1] ));
                     prevCommand = func;
                     break;
                 }
@@ -111,6 +116,7 @@ public class Coursemanager1 {
                 }
                 case "remove": { 
                     //not done
+                    //still have to find and print error for mult records trying to remove
                     System.out.println(cm.remove(
                         new Name(parts[1], parts[2]))); 
                     prevCommand = func;
@@ -186,37 +192,62 @@ public class Coursemanager1 {
                     break;
                 }
                 
+            }//end of switch
+            
+            String s = br.readLine();
+            if (s != null) {
+                line = s.trim();
             }
-            try {
-                String s = br.readLine();
-                if (s != null) {
-                    line = s.trim();
-                }
-                else {
-                    line = null;
-                }
+            else {
+                line = null;
             }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+            
+           
+            
         }
     }
+    
+    public String merge() {
+        return "All sections merged at section n";
+    }
+
     /**
      * Changes section to n
      * @param n identifier of section
      * @return string output
+     * @throws IOException 
      */
-    public String loadStudentData(String filename) {
-        
+    public String loadStudentData(String filename) throws Exception  {
+        studentDataLoaded = true;
+        String row;
+        BufferedReader csvReader = new BufferedReader(new FileReader(filename));
+        while ((row = csvReader.readLine()) != null) {
+            System.out.println(row);
+            String[] data = row.split(",");
+            studentData[curr] = new Student(new Name(data[1], data[2], data[3]), data[0]);
+            curr++;
+        }
+        csvReader.close();
         //goes through filename and adds all student records to studentRecords BST
         return filename + " successfully loaded";
     }
     
-    public String loadCourseData(String filename) {
-        boolean success = true;
-        String ret = "coursename Course has been successfully loaded";
-        //load stuff here
-        if(success) {
+    public String loadCourseData(String filename) throws IOException {
+        if(studentDataLoaded) {
+            String ret = filename + " has been successfully loaded";
+            
+            //load and read in the course data from csv
+            String row;
+            BufferedReader csvReader = new BufferedReader(new FileReader(filename));
+            while ((row = csvReader.readLine()) != null) {
+                
+                String[] data = row.split(",");
+                System.out.println(data[0]);
+                int currSec = Integer.parseInt(data[0]);
+                sections[currSec-1].insert((String)data[1], new Name(data[2],  data[3]), Integer.parseInt(data[4]), data[5]);;
+            
+            }
+            csvReader.close();
             return ret;
         }
         else {
@@ -239,19 +270,43 @@ public class Coursemanager1 {
      * @return string output
      */
     @SuppressWarnings("unchecked")
-    public String insert(Name n) {
+    public String insert(Name n, String pid) {
         //we first have to check if in the student data BST
         //then add to all 3 BSTs for the curr section
-        if (search(n).contains("failed")) {
-            Student newGuy = new Student(n, generateID());
-            sections[currSection - 1].getRoster().insert(newGuy);
-            currStudent = newGuy;
-            return "" + n + " inserted";
+        for(int i = 0; i < sections.length; i++) {
+            if(sections[i].contains(pid)) {
+                return n.toString() + " is already registered in a different section";
+            }
+        }
+        boolean valid = false;
+        String errorMessage = n.toString() + 
+            " insertion failed. Wrong student information. ID doesn't exist";
+        
+        for (int j = 0; j < studentData.length; j++) {
+            if(studentData[j].getID().compareTo(pid) == 0) {
+                if (studentData[j].getName().compareTo(n) == 0){
+              
+                valid = true;//found in studentData and name matches up
+                }
+                else {
+                    errorMessage = n.toString() +
+                        " insertion failed. Wrong student information. ID belongs to another student";
+                }
+            }
+        }
+        if(valid) {
+            if (!sections[currSection-1].contains(pid)) {
+    
+                sections[currSection-1].insert(pid, n, 0, "F");;
+                return "" + n + " inserted";
+            }
+            else {
+                return "" + n + " is already in section " +
+                    currSection + "\n";
+            }
         }
         else {
-            String info = search(n);
-            return "" + n + " is already in section " +
-                currSection + "\n" + info.substring(6, info.length());
+            return errorMessage;
         }
     
     }
@@ -268,7 +323,8 @@ public class Coursemanager1 {
                 " doesn't exist in section " + currSection;
         }
         else {
-            sections[currSection - 1].getRoster().remove(new Student(n, ""));
+            sections[currSection - 1].remove(n);
+
             return "Student " + n.toString() +
                 " get removed from section " + currSection;
         }
@@ -292,9 +348,8 @@ public class Coursemanager1 {
         return "Found!";
     }
     public String search(Name n) {
-        @SuppressWarnings("unchecked")
-        Student x = (Student)sections[currSection - 1]
-            .getRoster().find(new Student(n, ""));
+        //need to fix this
+        Student x = (Student)sections[currSection - 1].find(n);
         if (x == null) {
             prevCommandSuccess = false;
             return "Search failed. Student " + n.toString()
@@ -318,18 +373,18 @@ public class Coursemanager1 {
         String ret = "Search results for " + s + ":\n";
         boolean found = false;
         int foundcount = 0;
-        Student match = null;
+        Name match = null;
         @SuppressWarnings("unchecked")
-        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
+        Iterator<Name> me = sections[currSection - 1].getNameRoster().iterator();
         while (me.hasNext()) {
-            Student curr = me.next();
-            if (curr.getName().getLast().equals(s)) {
+            Name curr = me.next();
+            if (curr.getLast().equals(s)) {
                 found = true;
                 match = curr;
                 foundcount++;
                 ret += curr.toString() + "\n";
             }
-            else if (curr.getName().getFirst().equals(s)) {
+            else if (curr.getFirst().equals(s)) {
                 found = true;
                 match = curr;
                 foundcount++;
@@ -339,7 +394,7 @@ public class Coursemanager1 {
         if (found) {
             prevCommandSuccess = false;
             if (foundcount == 1) {
-                currStudent = match;
+                currStudent = sections[currSection-1].find(match);
                 prevCommandSuccess = true;
             }
             ret += s + " was found in " + foundcount +
@@ -384,7 +439,7 @@ public class Coursemanager1 {
         String ret = "";
         int count = 0;
         @SuppressWarnings("unchecked")
-        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
+        Iterator<String> me = sections[currSection - 1].getPidRoster().iterator();
         while (me.hasNext()) {
             count++;
             me.next();
@@ -407,10 +462,8 @@ public class Coursemanager1 {
         String[] grades = {"A", "A-", "B+", "B", "B-", "C+",
             "C", "C-", "D+", "D", "D-", "F"};
         int[] gradeCount = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
-        while (me.hasNext()) {
-            Student curr = me.next();
-            int currScore = curr.getScore();
+        for(int i = 0; i < sections[currSection-1].currSpot; i++) {
+            int currScore = sections[currSection-1].students[i].getScore();
             String g = "E";
             if (currScore >= 90) {
                 gradeCount[0]++;
@@ -460,7 +513,8 @@ public class Coursemanager1 {
                 gradeCount[11]++;
                 g = "F";
             }
-            currStudent.setGrade(g);
+            sections[currSection-1].students[i].setGrade(g);
+            
         }
         for (int i = 0; i < grades.length; i++) {
             if (gradeCount[i] > 0) {
@@ -479,11 +533,9 @@ public class Coursemanager1 {
         String[] letterArr = {"A", "A-", "B+", "B", "B-", "C+",
             "C", "C-", "D+", "D", "D-", "F"};
         int[] countArr = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        @SuppressWarnings("unchecked")
-        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
-        while (me.hasNext()) {
-            Student f = me.next();
-            String currGrade = f.getGrade();
+        
+        for(int i = 0; i < sections[currSection-1].currSpot; i++) {
+            String currGrade = sections[currSection-1].students[i].getGrade();
             switch(currGrade) {
                 case "A": {
                     countArr[0]++;
@@ -561,22 +613,16 @@ public class Coursemanager1 {
     
     public String list(String g) {
         String ret = "Students with grade " + g + " are:";
-        
-        Iterator<Student> me = sections[currSection - 1].getRoster().iterator();
         int count = 0;
-        if(g.substring(1).equals("*")){
-            //any + or - counts
-        }
-        else {
-            while (me.hasNext()) {
-                Student f = me.next();
-                String currGrade = f.getGrade();
-                if (currGrade.equals(g)) {
-                    ret += "\n" + f.toString();
-                    count++;
-                }
+        for(int i = 0; i < sections[currSection-1].currSpot; i++) {
+            if(g.substring(1).equals("*")){
+                //any + or - counts
+            }
+            else {
+                //normal just couunt
             }
         }
+        
         ret += "Found " + count + " students";
         return ret;
     }
@@ -587,27 +633,20 @@ public class Coursemanager1 {
      * @return string output
      */
     public String findPair(int x) {
-        @SuppressWarnings("unchecked")
-        Iterator<Student> me = sections[currSection - 1]
-            .getRoster().iterator();
-        ArrayList<Student> students = new ArrayList<Student>();
         int paircount = 0;
-        while (me.hasNext()) {
-            Student f = me.next();
-            students.add(f);
-        }
-        String ret = "Students with score difference less "
-            + "than or equal " + x + ":\n";
-        for (int i = 0; i < students.size(); i++) {
-            for (int j = i + 1; j < students.size(); j++) {
-                if (Math.abs(students.get(i).getScore() -
-                    students.get(j).getScore()) <= x) {
+        String ret = "";
+        Student[] studentpairs = sections[currSection-1].students;
+        for (int i = 0; i < sections[currSection-1].currSpot; i++ ) {
+            for (int j = 0; j < sections[currSection-1].currSpot; j++) {
+                if (Math.abs(studentpairs[i].getScore() - studentpairs[j].getScore()) <= x)
+                {
                     paircount++;
-                    ret += students.get(i).getName().toString() + ", " +
-                    students.get(j).getName().toString() + "\n";
+                    ret += studentpairs[i].getName().toString() + ", " +
+                    studentpairs[j].getName().toString() + "\n";
                 }
             }
         }
+        
         return ret + "found " + paircount + " pairs";
     }
 

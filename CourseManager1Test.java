@@ -1,5 +1,4 @@
-
-
+import java.io.IOException;
 
 /**
  * 
@@ -19,8 +18,9 @@ public class CourseManager1Test extends student.TestCase {
     
     /**
      * tests sample input to make sure it runs
+     * @throws Exception 
      */
-    public void testSampleInput() {
+    public void testSampleInput() throws Exception {
         boolean successfulRun = false;
         String[] arguments = new String[] {"sampleinput.txt"};
         Coursemanager1.main(arguments);
@@ -42,7 +42,7 @@ public class CourseManager1Test extends student.TestCase {
      */
     public void testInsert() {
         test = new Coursemanager1();
-        String s = test.insert(new Name("Ryan", "Kirkpatrick"));
+        String s = test.insert(new Name("Ryan", "Kirkpatrick"), "906088299");
         assertTrue(s.equals("ryan kirkpatrick inserted"));
     }
     
@@ -53,7 +53,7 @@ public class CourseManager1Test extends student.TestCase {
     public void testRemove() {
         test = new Coursemanager1();
         test.section(1);
-        test.insert(new Name("Ryan", "Kirkpatrick"));
+        test.insert(new Name("Ryan", "Kirkpatrick"), "906088299");
         String t = test.remove(new Name("Ryan", "Kirkpatrick"));
         System.out.println(t);
         assertTrue(t.equals("Student ryan kirkpatrick"
@@ -66,7 +66,7 @@ public class CourseManager1Test extends student.TestCase {
     public void testSearch() {
         test = new Coursemanager1();
         test.section(1); 
-        test.insert(new Name("Ryan", "Kirkpatrick"));
+        test.insert(new Name("Ryan", "Kirkpatrick"), "906088299");
         String s = test.search(new Name("Ryan", "Kirkpatrick"));
         assertTrue(s.equals("Found 010001, ryan kirkpatrick, score = 0"));
     }
@@ -77,7 +77,7 @@ public class CourseManager1Test extends student.TestCase {
     public void testScore() {
         test = new Coursemanager1();
         test.section(1); 
-        test.insert(new Name("Ryan", "Kirkpatrick"));
+        test.insert(new Name("Ryan", "Kirkpatrick"), "906088299");
         test.search(new Name("ryan", "kirkpatrick"));
         String s = test.score(89);
         System.out.println(s);

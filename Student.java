@@ -22,6 +22,13 @@ public class Student implements Comparable {
         id = i;
     }
     
+    public Student(Name n, String id, int score, String grade) {
+        name = n;
+        this.score = score;
+        this.id = id;
+        this.grade = grade;
+    }
+    
     /**
      * 
      * @return this
@@ -78,13 +85,7 @@ public class Student implements Comparable {
         return score;
     }
     
-    /**
-     * 
-     * @return currid 
-     */
-    public void setID(String s) {
-        id = s;
-    }
+
     public String getID() {
         return id;
     }
