@@ -67,15 +67,12 @@ public class Coursemanager1 {
             String func = parts[0];
             switch(func) {
                 case "loadstudentdata":{
-                    //done
-                    System.out.println(parts[1]);
                     System.out.println(cm.loadStudentData(parts[1]));
+                    break;
                 }
                 case "loadcoursedata": {
-                    System.out.println("in here");
-                    System.out.println(line);
-                    //not done
                     System.out.println(cm.loadCourseData(parts[1]));
+                    break;
                 }
                 case "section": { 
                     System.out.println(
@@ -93,6 +90,8 @@ public class Coursemanager1 {
                     
                     //not done
                     System.out.println(cm.searchid(parts[1]));
+                    prevCommand = "search";
+                    break;
                 }
                 case "search": {
                     if (parts.length == 2) {
@@ -211,12 +210,6 @@ public class Coursemanager1 {
         return "All sections merged at section n";
     }
 
-    /**
-     * Changes section to n
-     * @param n identifier of section
-     * @return string output
-     * @throws IOException 
-     */
     public String loadStudentData(String filename) throws Exception  {
         studentDataLoaded = true;
         String row;
@@ -234,7 +227,7 @@ public class Coursemanager1 {
     
     public String loadCourseData(String filename) throws IOException {
         if(studentDataLoaded) {
-            String ret = filename + " has been successfully loaded";
+            String ret = filename.split("\\.")[0] + " Course has been successfully loaded.";
             
             //load and read in the course data from csv
             String row;
@@ -242,9 +235,11 @@ public class Coursemanager1 {
             while ((row = csvReader.readLine()) != null) {
                 
                 String[] data = row.split(",");
-                System.out.println(data[0]);
+                System.out.println(row);
                 int currSec = Integer.parseInt(data[0]);
-                sections[currSec-1].insert((String)data[1], new Name(data[2],  data[3]), Integer.parseInt(data[4]), data[5]);;
+                if (!sections[currSec-1].contains((String)data[1])) {
+                    sections[currSec-1].insert((String)data[1], new Name(data[2],  data[3]), Integer.parseInt(data[4]), data[5]);
+                }
             
             }
             csvReader.close();
@@ -254,10 +249,14 @@ public class Coursemanager1 {
             return "Course Load Failed. You have to load Student " + 
                 "Information file first.";
         }
-        //
     }
     
-    
+    /**
+     * Changes section to n
+     * @param n identifier of section
+     * @return string output
+     * @throws IOException 
+     */
     public String section(int n) {
         currSection = n;
         return "switch to section " + currSection;
@@ -275,6 +274,11 @@ public class Coursemanager1 {
         //then add to all 3 BSTs for the curr section
         for(int i = 0; i < sections.length; i++) {
             if(sections[i].contains(pid)) {
+                if (i == currSection - 1) {
+                    currStudent = (Student)sections[i].find(n);
+                    return n.toString() + " is already in section " + currSection;
+                }
+                currStudent = (Student)sections[i].find(n);
                 return n.toString() + " is already registered in a different section";
             }
         }
@@ -283,7 +287,7 @@ public class Coursemanager1 {
             " insertion failed. Wrong student information. ID doesn't exist";
         
         for (int j = 0; j < studentData.length; j++) {
-            if(studentData[j].getID().compareTo(pid) == 0) {
+            if(studentData[j] != null && studentData[j].getID().compareTo(pid) == 0) {
                 if (studentData[j].getName().compareTo(n) == 0){
               
                 valid = true;//found in studentData and name matches up
@@ -295,15 +299,10 @@ public class Coursemanager1 {
             }
         }
         if(valid) {
-            if (!sections[currSection-1].contains(pid)) {
     
                 sections[currSection-1].insert(pid, n, 0, "F");;
+                currStudent = (Student)sections[currSection-1].find(n);
                 return "" + n + " inserted";
-            }
-            else {
-                return "" + n + " is already in section " +
-                    currSection + "\n";
-            }
         }
         else {
             return errorMessage;
@@ -344,22 +343,51 @@ public class Coursemanager1 {
      * @return string output
      */
     public String searchid(String id) {
-        //search by id
-        return "Found!";
-    }
-    public String search(Name n) {
-        //need to fix this
-        Student x = (Student)sections[currSection - 1].find(n);
+        Student x = (Student)sections[currSection - 1].find(id);
         if (x == null) {
             prevCommandSuccess = false;
-            return "Search failed. Student " + n.toString()
-                + " doesn't exist in section " + currSection;
+            return "Search Failed. Couldn't find any student with ID " + id;
+        }
+        prevCommandSuccess = true;
+        currStudent = x;
+        return "Found " + x.toString();
+    }
+    public String search(Name n) {
+        String ret = "Search results for " + n.toString() + ":\n";
+        boolean found = false;
+        int foundcount = 0;
+        Name match = null;
+        @SuppressWarnings("unchecked")
+        Iterator<Name> me = sections[currSection - 1].getNameRoster().iterator();
+        while (me.hasNext()) {
+            Name curr = me.next();
+            if (curr.getLast().equals(s)) {
+                found = true;
+                match = curr;
+                foundcount++;
+                ret += curr.toString() + "\n";
+            }
+            else if (curr.getFirst().equals(s)) {
+                found = true;
+                match = curr;
+                foundcount++;
+                ret += curr.toString() + "\n";
+            }
+        }
+        if (found) {
+            prevCommandSuccess = false;
+            if (foundcount == 1) {
+                currStudent = sections[currSection-1].find(match);
+                prevCommandSuccess = true;
+            }
+            ret += s + " was found in " + foundcount +
+                " records in section " + currSection;
+            return ret;
         }
         else {
-            prevCommandSuccess = true;
-            currStudent = x;
-            return ("Found " + x.toString());
-
+            prevCommandSuccess = false;
+            ret += s + " was found in 0 records in section " + currSection;
+            return ret;
         }
 
     }
@@ -444,12 +472,9 @@ public class Coursemanager1 {
             count++;
             me.next();
         }
-        ret += "Section " + currSection + " dump:";
-        if (count > 0) {
-            ret += "\n";
-        }
+        ret += "Section " + currSection + " dump:\n";
         return (ret + sections[currSection - 1].toString() 
-            + "\nSize = " + count);
+            + "Size = " + count);
         //inorder traversal
     }
     /**

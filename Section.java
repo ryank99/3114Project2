@@ -1,4 +1,4 @@
-
+import java.util.Iterator;
 /**
  * 
  * @author Ryan Kirkpatrick, Jared Blumen
@@ -53,7 +53,7 @@ public class Section {
     
     private int getIndex(Name n) {
         for(int i = 0; i < students.length; i++) {
-            if(students[i].getName().compareTo(n) == 0) {
+            if(students[i] != null && students[i].getName().compareTo(n) == 0) {
                 return i;
             }
         }
@@ -62,7 +62,7 @@ public class Section {
     
     private int getIndex(String pid) {
         for(int i = 0; i < students.length; i++) {
-            if(students[i].getID().compareTo(pid) == 0) {
+            if(students[i] != null && students[i].getID().compareTo(pid) == 0) {
                 return i;
             }
         }
@@ -91,7 +91,6 @@ public class Section {
         name_roster.remove(curr.getName(), index);
         score_roster.remove(curr.getScore(), index);
         pid_roster.remove(curr.getID(), index);
-        
     }
     
     /**
@@ -100,10 +99,16 @@ public class Section {
      * @return reference to the student info from name
      */
     public Student find(Name n) {
+        int index = getIndex(n);
+        if (index == -1)
+            return null;
         return students[getIndex(n)];
     }
     
     public Student find(String pid) {
+        int index = getIndex(pid);
+        if (index == -1)
+            return null;
         return students[getIndex(pid)];
     }
     
@@ -119,6 +124,28 @@ public class Section {
      * @return BSTs toString
      */
     public String toString() {
-        return pid_roster.toString() + name_roster.toString() + score_roster.toString();
+        String ret = "";
+        
+        int[] pidIndexes = pid_roster.indexInOrder();
+        ret += "BST by ID:\n";
+        for (int index: pidIndexes) {
+            Student s = students[index];
+            ret += s.toString() + "\n";
+        }
+        
+        int[] nameIndexes = name_roster.indexInOrder();
+        ret += "BST by name:\n";
+        for (int index: nameIndexes) {
+            Student s = students[index];
+            ret += s.toString() + "\n";
+        }
+        
+        int[] scoreIndexes = score_roster.indexInOrder();
+        ret += "BST by score:\n";
+        for (int index: scoreIndexes) {
+            Student s = students[index];
+            ret += s.toString() + "\n";
+        }
+        return ret;
     }
 }

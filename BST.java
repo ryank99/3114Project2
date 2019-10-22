@@ -181,16 +181,16 @@ public class BST<T extends Comparable<? super T>>
             return new BinaryNode<T>(x, index);
         }
         else if (x.compareTo(node.getElement()) < 0) {
-            node.setLeft(insert(x, node.getLeft()));
+            node.setLeft(insert(x, node.getLeft(), index));
         }
         else if (x.compareTo(node.getElement()) > 0) {
-            node.setRight(insert(x, node.getRight()));
+            node.setRight(insert(x, node.getRight(), index));
         }
         else if (index < node.getIndex()) {
-            node.setLeft(insert(x, node.getLeft()));
+            node.setLeft(insert(x, node.getLeft(), index));
         }
         else if (index > node.getIndex()){
-            node.setRight(insert(x, node.getLeft()));
+            node.setRight(insert(x, node.getLeft(), index));
         }
         else 
             return null;
@@ -469,12 +469,40 @@ public class BST<T extends Comparable<? super T>>
         }
         
     }
+    
+    public int[] indexInOrder() {
+        int[] result = new int[elements];
+        int count = 0;
+        Stack<BinaryNode<T>> myStack = new Stack<BinaryNode<T>>();
+        BinaryNode<T> x = root;
+        while (x != null) {
+            myStack.push(x);
+            x = x.getLeft();
+        }
+        while (!myStack.isEmpty()) {
+            BinaryNode<T> curr = myStack.pop();
+            int index = curr.getIndex();
+            if (curr.getRight() != null) {
+                curr = curr.getRight();
+                while (curr != null) {
+                    myStack.push(curr);
+                    curr = curr.getLeft();
+                }
+            }     
+            result[count] = index;
+            count++;
+        }
+        return result;
+    }
+    
+    
 
 
     @Override
     public Iterator<T> iterator() {
         return new MyIterator(root);
     }
+    
     
     
 }
