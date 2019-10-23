@@ -1,5 +1,3 @@
-
-
 import java.util.Iterator;
 import java.util.Stack;
 /**
@@ -57,19 +55,19 @@ public class BST<T extends Comparable<? super T>>
      *            the item to remove.
      */
     public void remove(T x) {
-        if (x.equals(root.getElement())) {
+        if (x.equals(root)) {
             makeEmpty();
         }
         root = remove(x, root);
-        actualElements--;
+
     }
     
     public void remove(T x, int index) {
-        if (x.equals(root.getElement())) {
+        if (x.equals(root)) {
             makeEmpty();
         }
         root = remove(x, root, index);
-        actualElements--;
+
     }
 
 
@@ -217,9 +215,6 @@ public class BST<T extends Comparable<? super T>>
 
         // If there's no more subtree to examine
         if (node == null) {
-            if (node == root) {
-                actualElements++;
-            }
             return null;
         }
 
@@ -265,19 +260,19 @@ public class BST<T extends Comparable<? super T>>
 
         // if value should be to the left of the root
         if (x.compareTo(node.getElement()) < 0) {
-            node.setLeft(remove(x, node.getLeft(), index));
+            node.setLeft(remove(x, node.getLeft()));
         }
         // if value should be to the right of the root
         else if (x.compareTo(node.getElement()) > 0) {
-            node.setRight(remove(x, node.getRight(), index));
+            node.setRight(remove(x, node.getRight()));
         }
         // If value is on the current node
         else {
             if (node.getIndex() < index) {
-                node.setLeft(remove(x, node.getLeft(), index));
+                node.setLeft(remove(x, node.getLeft()));
             }
             else if(node.getIndex() > index) {
-                node.setRight(remove(x, node.getLeft(), index));
+                node.setRight(remove(x, node.getLeft()));
             }
             else {
              // If there are two children
@@ -299,6 +294,7 @@ public class BST<T extends Comparable<? super T>>
             
             
         }
+        actualElements--;
         return result;
     }
 
@@ -473,7 +469,7 @@ public class BST<T extends Comparable<? super T>>
     }
     
     public int[] indexInOrder() {
-        int[] result = new int[actualElements];
+        int[] result = new int[elements];
         int count = 0;
         Stack<BinaryNode<T>> myStack = new Stack<BinaryNode<T>>();
         BinaryNode<T> x = root;
@@ -490,12 +486,9 @@ public class BST<T extends Comparable<? super T>>
                     myStack.push(curr);
                     curr = curr.getLeft();
                 }
-            }
-            if (count < actualElements)
-            {
-                result[count] = index;
-                count++;   
-            }
+            }     
+            result[count] = index;
+            count++;
         }
         return result;
     }
