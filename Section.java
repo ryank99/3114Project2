@@ -94,6 +94,14 @@ public class Section {
         pid_roster.remove(curr.getID(), index);
     }
     
+    public void removePid(String pid) {
+        int index = getIndex(pid);
+        Student curr = students[index];
+        name_roster.remove(curr.getName(), index);
+        score_roster.remove(curr.getScore(), index);
+        pid_roster.remove(curr.getID(), index);
+    }
+    
     public void remove(String pid) {
         int index = getIndex(pid);
         Student curr = students[index];
@@ -140,22 +148,26 @@ public class Section {
         ret += "BST by ID:\n";
         for (int index: pidIndexes) {
             Student s = students[index];
-            ret += s.toString() + "\n";
+            if(s != null) {
+                ret += s.toString() + "\n";
+            }
         }
         
         int[] nameIndexes = name_roster.indexInOrder();
         ret += "BST by name:\n";
         for (int index: nameIndexes) {
             Student s = students[index];
-            ret += s.toString() + "\n";
-        }
+            if(s != null) {
+                ret += s.toString() + "\n";
+            }        }
         
         int[] scoreIndexes = score_roster.indexInOrder();
         ret += "BST by score:\n";
         for (int index: scoreIndexes) {
             Student s = students[index];
-            ret += s.toString() + "\n";
-        }
+            if(s != null) {
+                ret += s.toString() + "\n";
+            }        }
         return ret;
     }
 }
