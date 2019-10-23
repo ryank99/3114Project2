@@ -116,8 +116,12 @@ public class Coursemanager1 {
                 case "remove": { 
                     //not done
                     //still have to find and print error for mult records trying to remove
-                    System.out.println(cm.remove(
-                        new Name(parts[1], parts[2]))); 
+                    if (parts.length > 2) {
+                        System.out.println(cm.remove(
+                            new Name(parts[1], parts[2]))); 
+                    } else {
+                        System.out.println(cm.remove(parts[1]));
+                    }
                     prevCommand = func;
                     break;
                 }
@@ -317,13 +321,32 @@ public class Coursemanager1 {
     @SuppressWarnings("unchecked")
     public String remove(Name n) {
         //have to remove n from all 3 BSTs in the section
-        if (search(n).contains("failed")) {
+        if (sections[currSection-1].find(n) == null) {
             return "Remove failed. Student " + n.toString() + 
                 " doesn't exist in section " + currSection;
         }
         else {
             sections[currSection - 1].remove(n);
 
+            return "Student " + n.toString() +
+                " get removed from section " + currSection;
+        }
+    }
+    /**
+     * Removes student from current section
+     * @param pid PID of student to remove
+     * @return string output
+     */
+    @SuppressWarnings("unchecked")
+    public String remove(String pid) {
+        //have to remove n from all 3 BSTs in the section
+        Student s = sections[currSection-1].find(pid);
+        if (s == null) {
+            return "Remove failed: couldn't find any student with id " + pid.toString();
+        }
+        else {
+            Name n = s.getName();
+            sections[currSection - 1].remove(pid);
             return "Student " + n.toString() +
                 " get removed from section " + currSection;
         }
@@ -357,21 +380,19 @@ public class Coursemanager1 {
         boolean found = false;
         int foundcount = 0;
         Name match = null;
-        @SuppressWarnings("unchecked")
-        Iterator<Name> me = sections[currSection - 1].getNameRoster().iterator();
-        while (me.hasNext()) {
-            Name curr = me.next();
-            if (curr.getLast().equals(s)) {
-                found = true;
-                match = curr;
-                foundcount++;
-                ret += curr.toString() + "\n";
-            }
-            else if (curr.getFirst().equals(s)) {
-                found = true;
-                match = curr;
-                foundcount++;
-                ret += curr.toString() + "\n";
+        Student[] students = sections[currSection-1].students;
+        int end = sections[currSection-1].currSpot;
+        for (int i = 0; i < end; i++)
+        {
+            if (students[i] != null)
+            {
+                Name curr = students[i].getName();
+                if (curr.compareTo(n) == 0) {
+                    found = true;
+                    match = curr;
+                    foundcount++;
+                    ret += students[i].toString() + "\n";
+                }
             }
         }
         if (found) {
@@ -380,13 +401,13 @@ public class Coursemanager1 {
                 currStudent = sections[currSection-1].find(match);
                 prevCommandSuccess = true;
             }
-            ret += s + " was found in " + foundcount +
+            ret += n.toString() + " was found in " + foundcount +
                 " records in section " + currSection;
             return ret;
         }
         else {
             prevCommandSuccess = false;
-            ret += s + " was found in 0 records in section " + currSection;
+            ret += n.toString() + " was found in 0 records in section " + currSection;
             return ret;
         }
 
@@ -402,21 +423,25 @@ public class Coursemanager1 {
         boolean found = false;
         int foundcount = 0;
         Name match = null;
-        @SuppressWarnings("unchecked")
-        Iterator<Name> me = sections[currSection - 1].getNameRoster().iterator();
-        while (me.hasNext()) {
-            Name curr = me.next();
-            if (curr.getLast().equals(s)) {
-                found = true;
-                match = curr;
-                foundcount++;
-                ret += curr.toString() + "\n";
-            }
-            else if (curr.getFirst().equals(s)) {
-                found = true;
-                match = curr;
-                foundcount++;
-                ret += curr.toString() + "\n";
+        Student[] students = sections[currSection-1].students;
+        int end = sections[currSection-1].currSpot;
+        for (int i = 0; i < end; i++)
+        {
+            if (students[i] != null)
+            {
+                Name curr = students[i].getName();
+                if (curr.getLast().equals(s)) {
+                    found = true;
+                    match = curr;
+                    foundcount++;
+                    ret += students[i].toString() + "\n";
+                }
+                else if (curr.getFirst().equals(s)) {
+                    found = true;
+                    match = curr;
+                    foundcount++;
+                    ret += students[i].toString() + "\n";
+                }
             }
         }
         if (found) {
@@ -450,7 +475,11 @@ public class Coursemanager1 {
                 (prevCommand.equals("search") && prevCommandSuccess)) {
                 String output = "Update " + currStudent.getName()
                     +  " record, Score = " + s;
+                String pid = currStudent.getID();
+                int index = sections[currSection-1].getIndex(pid);
+                sections[currSection-1].getScoreRoster().remove(currStudent.getScore(), index);
                 currStudent.setScore(s);
+                sections[currSection-1].getScoreRoster().insert(currStudent.getScore(), index);
                 return output;
             }
             return "score command can only be called after an "
@@ -488,58 +517,59 @@ public class Coursemanager1 {
             "C", "C-", "D+", "D", "D-", "F"};
         int[] gradeCount = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         for(int i = 0; i < sections[currSection-1].currSpot; i++) {
-            int currScore = sections[currSection-1].students[i].getScore();
-            String g = "E";
-            if (currScore >= 90) {
-                gradeCount[0]++;
-                g = "A";
+            if (sections[currSection-1].students[i] != null) {
+                int currScore = sections[currSection-1].students[i].getScore();
+                String g = "E";
+                if (currScore >= 90) {
+                    gradeCount[0]++;
+                    g = "A";
+                }
+                else if (currScore >= 85 && currScore < 90) {
+                    gradeCount[1]++;
+                    g = "A-";
+                }
+                else if (currScore >= 80 && currScore < 85) {
+                    gradeCount[2]++;
+                    g = "B+";
+                }
+                else if (currScore >= 75 && currScore < 80) {
+                    gradeCount[3]++;
+                    g = "B";   
+                }
+                else if (currScore >= 70 && currScore < 75) {
+                    gradeCount[4]++;
+                    g = "B-";
+                }
+                else if (currScore >= 65 && currScore < 70) {
+                    gradeCount[5]++;
+                    g = "C+";
+                }
+                else if (currScore >= 60 && currScore < 65) {
+                    gradeCount[6]++;
+                    g = "C";
+                }
+                else if (currScore > 57 && currScore < 60) {
+                    gradeCount[7]++;
+                    g = "C-";
+                }
+                else if (currScore >= 55 && currScore <= 57) {
+                    gradeCount[8]++;
+                    g = "D+";
+                }
+                else if (currScore >= 53 && currScore < 55) {
+                    gradeCount[9]++;
+                    g = "D";
+                }
+                else if (currScore >= 50 && currScore < 53) {
+                    gradeCount[10]++;
+                    g = "D-";
+                }
+                else {
+                    gradeCount[11]++;
+                    g = "F";
+                }
+                sections[currSection-1].students[i].setGrade(g);
             }
-            else if (currScore >= 85 && currScore < 90) {
-                gradeCount[1]++;
-                g = "A-";
-            }
-            else if (currScore >= 80 && currScore < 85) {
-                gradeCount[2]++;
-                g = "B+";
-            }
-            else if (currScore >= 75 && currScore < 80) {
-                gradeCount[3]++;
-                g = "B";   
-            }
-            else if (currScore >= 70 && currScore < 75) {
-                gradeCount[4]++;
-                g = "B-";
-            }
-            else if (currScore >= 65 && currScore < 70) {
-                gradeCount[5]++;
-                g = "C+";
-            }
-            else if (currScore >= 60 && currScore < 65) {
-                gradeCount[6]++;
-                g = "C";
-            }
-            else if (currScore > 57 && currScore < 60) {
-                gradeCount[7]++;
-                g = "C-";
-            }
-            else if (currScore >= 55 && currScore <= 57) {
-                gradeCount[8]++;
-                g = "D+";
-            }
-            else if (currScore >= 53 && currScore < 55) {
-                gradeCount[9]++;
-                g = "D";
-            }
-            else if (currScore >= 50 && currScore < 53) {
-                gradeCount[10]++;
-                g = "D-";
-            }
-            else {
-                gradeCount[11]++;
-                g = "F";
-            }
-            sections[currSection-1].students[i].setGrade(g);
-            
         }
         for (int i = 0; i < grades.length; i++) {
             if (gradeCount[i] > 0) {
@@ -560,73 +590,74 @@ public class Coursemanager1 {
         int[] countArr = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         
         for(int i = 0; i < sections[currSection-1].currSpot; i++) {
-            String currGrade = sections[currSection-1].students[i].getGrade();
-            switch(currGrade) {
-                case "A": {
-                    countArr[0]++;
-                    break;
-
-                }
-                case "A-": {
-                    countArr[1]++;
-                    break;
-
-                }
-                case "B+": {
-                    countArr[2]++;
-                    break;
-
-                }
-                case "B": {
-                    countArr[3]++;
-                    break;
-
-                }   
-                case "B-": {
-                    countArr[4]++;
-                    break;
-
-                }
-                case "C+": {
-                    countArr[5]++;
-                    break;
-
-                }
-                case "C": {
-                    countArr[6]++;
-                    break;
-
-                }
-                case "C-": {
-                    countArr[7]++;
-                    break;
-
-                }
-                case "D+": {
-                    countArr[8]++;
-                    break;
-
-                }
-                case "D": {
-                    countArr[9]++;
-                    break;
-
-                }
-                case "D-": {
-                    countArr[10]++;
-                    break;
-
-                }
-                case "F": {
-                    countArr[11]++;
-                    break;
-
-                }
-                default: {
-                    break;
+            if (sections[currSection-1].students[i] != null) {
+                String currGrade = sections[currSection-1].students[i].getGrade();
+                switch(currGrade) {
+                    case "A": {
+                        countArr[0]++;
+                        break;
+    
+                    }
+                    case "A-": {
+                        countArr[1]++;
+                        break;
+    
+                    }
+                    case "B+": {
+                        countArr[2]++;
+                        break;
+    
+                    }
+                    case "B": {
+                        countArr[3]++;
+                        break;
+    
+                    }   
+                    case "B-": {
+                        countArr[4]++;
+                        break;
+    
+                    }
+                    case "C+": {
+                        countArr[5]++;
+                        break;
+    
+                    }
+                    case "C": {
+                        countArr[6]++;
+                        break;
+    
+                    }
+                    case "C-": {
+                        countArr[7]++;
+                        break;
+    
+                    }
+                    case "D+": {
+                        countArr[8]++;
+                        break;
+    
+                    }
+                    case "D": {
+                        countArr[9]++;
+                        break;
+    
+                    }
+                    case "D-": {
+                        countArr[10]++;
+                        break;
+    
+                    }
+                    case "F": {
+                        countArr[11]++;
+                        break;
+    
+                    }
+                    default: {
+                        break;
+                    }
                 }
             }
-            
         }
         for(int i = 0; i < letterArr.length; i++) {
             ret += "\n" + countArr[i] + " students with grade " + letterArr[i];
@@ -663,7 +694,7 @@ public class Coursemanager1 {
         Student[] studentpairs = sections[currSection-1].students;
         for (int i = 0; i < sections[currSection-1].currSpot; i++ ) {
             for (int j = 0; j < sections[currSection-1].currSpot; j++) {
-                if (Math.abs(studentpairs[i].getScore() - studentpairs[j].getScore()) <= x)
+                if (studentpairs[i] != null && studentpairs[j] != null && Math.abs(studentpairs[i].getScore() - studentpairs[j].getScore()) <= x)
                 {
                     paircount++;
                     ret += studentpairs[i].getName().toString() + ", " +

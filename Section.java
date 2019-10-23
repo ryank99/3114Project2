@@ -60,7 +60,7 @@ public class Section {
         return -1;
     }
     
-    private int getIndex(String pid) {
+    public int getIndex(String pid) {
         for(int i = 0; i < students.length; i++) {
             if(students[i] != null && students[i].getID().compareTo(pid) == 0) {
                 return i;
@@ -88,6 +88,16 @@ public class Section {
     public void remove(Name n) {
         int index = getIndex(n);
         Student curr = students[index];
+        students[index] = null;
+        name_roster.remove(curr.getName(), index);
+        score_roster.remove(curr.getScore(), index);
+        pid_roster.remove(curr.getID(), index);
+    }
+    
+    public void remove(String pid) {
+        int index = getIndex(pid);
+        Student curr = students[index];
+        students[index] = null;
         name_roster.remove(curr.getName(), index);
         score_roster.remove(curr.getScore(), index);
         pid_roster.remove(curr.getID(), index);
