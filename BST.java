@@ -184,16 +184,18 @@ public class BST<T extends Comparable<? super T>>
         else if (x.compareTo(node.getElement()) > 0) {
             node.setRight(insert(x, node.getRight(), index));
         }
-        else if (index < node.getIndex()) {
-            node.setLeft(insert(x, node.getLeft(), index));
+        else {
+            if (index < node.getIndex()) {
+                node.setLeft(insert(x, node.getLeft(), index));
+            }
+            else if (index > node.getIndex()){
+                node.setRight(insert(x, node.getRight(), index));
+            }
+            else 
+                return null;
         }
-        else if (index > node.getIndex()){
-            node.setRight(insert(x, node.getLeft(), index));
-        }
-        else 
-            return null;
-        
         return node;
+        
     }
     
 
@@ -275,7 +277,7 @@ public class BST<T extends Comparable<? super T>>
                 node.setLeft(remove(x, node.getLeft(), index));
             }
             else if(node.getIndex() > index) {
-                node.setRight(remove(x, node.getLeft(), index));
+                node.setRight(remove(x, node.getRight(), index));
             }
             else {
              // If there are two children
@@ -287,11 +289,11 @@ public class BST<T extends Comparable<? super T>>
                 }
                 // If there is only one child on the left
                 else if (node.getLeft() != null) {
-                    result = node.getLeft();
+                    result = node.getRight();
                 }
                 // If there is only one child on the right
                 else {
-                    result = node.getRight();
+                    result = node.getLeft();
                 }
             }
             

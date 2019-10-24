@@ -234,7 +234,23 @@ public class Coursemanager2 {
     }
 
     public String merge() {
-        return "All sections merged at section n";
+        Section mergeSection;
+        if(sections[currSection].isEmpty()) {
+            mergeSection = sections[currSection];
+            for(int i = 0; i < sections.length; i++) {
+                if(sections[i].isEmpty()) {
+                    
+                }
+            }
+        }
+        else {
+            return("Sections could only be merged to an empty section." +
+                " Section " + currSection + " is not empty.");
+        }
+        
+        
+        
+        return("All sections merged at section n");
     }
 
     public String loadStudentData(String filename) throws Exception  {
@@ -243,7 +259,13 @@ public class Coursemanager2 {
         BufferedReader csvReader = new BufferedReader(new FileReader(filename));
         while ((row = csvReader.readLine()) != null) {
             String[] data = row.split(",");
-            studentData[curr] = new Student(new Name(data[1], data[2], data[3]), data[0]);
+            String pid = data[0];
+            if(pid.length() < 9) {
+                for(int i = 0; i < 9-pid.length(); i++) {
+                    pid = "0" + pid;
+                }
+            }
+            studentData[curr] = new Student(new Name(data[1], data[2], data[3]), pid);
             curr++;
         }
         csvReader.close();
@@ -253,22 +275,67 @@ public class Coursemanager2 {
     
     public String loadCourseData(String filename) throws IOException {
         if(studentDataLoaded) {
-            String ret = filename.split("\\.")[0] + " Course has been successfully loaded.";
-            
+            System.out.println(filename.split("\\.")[0] + " Course has been successfully loaded.");
+
             //load and read in the course data from csv
             String row;
             BufferedReader csvReader = new BufferedReader(new FileReader(filename));
             while ((row = csvReader.readLine()) != null) {
-                
                 String[] data = row.split(",");
                 int currSec = Integer.parseInt(data[0]);
-                if (!sections[currSec-1].contains((String)data[1])) {
-                    sections[currSec-1].insert((String)data[1], new Name(data[2],  data[3]), Integer.parseInt(data[4]), data[5]);
+                boolean eValid = false;
+                boolean mValid = false;
+                boolean dValid = true;
+                String pid = data[1];
+                if(pid.length() < 9) {
+                    for(int i = 0; i < 9-pid.length(); i++) {
+                        pid = "0" + pid;
+                    }
                 }
-            
+                Name n = new Name(data[2], data[3]);
+                //check if in student records
+                //check if matching id
+                //check if in another section
+                for (int j = 0; j < studentData.length; j++) {
+                    if(studentData[j] != null) {
+                        if(studentData[j].getID().compareTo(pid) == 0) {
+                            eValid = true;
+                            if (studentData[j].getName().compareTo(n) == 0){
+                                mValid = true;
+                            } 
+                        }
+                    }
+
+                }
+                int foundSec = -1;
+                for(int i = 0; i < sections.length; i++) {
+                    if(sections[i].find(pid) != null && sections[i].find(n) != null) {
+                        foundSec = i+1;//then are in section i already
+                        dValid = false;
+                    }
+                }
+                if(!eValid) {
+                    System.out.println("Warning: Student " + n.toString() + " is not loaded to section " + currSec + " since he/she doesn't exist in the loaded student records.");
+                }
+                else if(!mValid){
+                    System.out.println("Warning: Student "+ n.toString() +" is not loaded to" + 
+                        "section "+currSec +" since the corresponding pid belongs to another" + 
+                        " student.");
+                }
+                else if(!dValid) {
+                    System.out.println("Warning: Student " + n.toString() + " is not loaded to section "+ currSec + " since" +
+                        " he/she is already enrolled in section " + foundSec);
+                }
+                else {
+                    sections[currSec-1].insert(pid, n, Integer.parseInt(data[4]), data[5]);//actual add
+                }
+                
+                
+
+
             }
             csvReader.close();
-            return ret;
+            return "";
         }
         else {
             return "Course Load Failed. You have to load Student " + 
@@ -290,16 +357,14 @@ public class Coursemanager2 {
         int section = ( ((sA[3] & 0xFF) << 24) | ((sA[2] & 0xFF) << 16) | ((sA[1] & 0xFF) << 8) | (sA[0] & 0xFF));
         int ch;
         while((ch=stream.read())!=-1) {
-            System.out.print((char)ch); 
         }
-        return "coursename Course has been  successfully loaded!";
+        return "coursename Course has been successfully loaded!";
     }
     //this method
     public String readStudentDataFile(String s) throws Exception {
         FileInputStream stream = new FileInputStream(s);
         int ch;
         while((ch=stream.read())!=-1) {
-            System.out.print((char)ch); 
         }
         return s+ " successfully loaded";
     }
@@ -324,6 +389,7 @@ public class Coursemanager2 {
      */
     @SuppressWarnings("unchecked")
     public String insert(Name n, String pid) {
+        prevCommandSuccess = false;
         //we first have to check if in the student data BST
         //then add to all 3 BSTs for the curr section
         for(int i = 0; i < sections.length; i++) {
@@ -353,7 +419,7 @@ public class Coursemanager2 {
             }
         }
         if(valid) {
-    
+                prevCommandSuccess = true;
                 sections[currSection-1].insert(pid, n, 0, "F");;
                 currStudent = (Student)sections[currSection-1].find(n);
                 return "" + n + " inserted";
@@ -521,8 +587,7 @@ public class Coursemanager2 {
             return "Scores have to be integers in range 0 to 100.";
         }
         else {
-            if (prevCommand.equals("insert") ||
-                (prevCommand.equals("search") && prevCommandSuccess)) {
+            if ((prevCommand.equals("insert") || prevCommand.equals("search")) && prevCommandSuccess) {
                 String output = "Update " + currStudent.getName()
                     +  " record, Score = " + s;
                 String pid = currStudent.getID();

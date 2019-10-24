@@ -27,6 +27,10 @@ public class Section {
         num = i;
     }
     
+    public boolean isEmpty() {
+        return name_roster.isEmpty();
+    }
+    
     /**
      * 
      * @return this sections bst
