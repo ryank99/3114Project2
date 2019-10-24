@@ -1,0 +1,40 @@
+if(studentDataLoaded) {
+    String ret = filename.split("\\.")[0] + " Course has been successfully loaded.";
+
+    //load and read in the course data from csv
+    String row;
+    BufferedReader csvReader = new BufferedReader(new FileReader(filename));
+    while ((row = csvReader.readLine()) != null) {
+
+        String[] data = row.split(",");
+        int currSec = Integer.parseInt(data[0]);
+        boolean valid = false;
+        String pid = data[1];
+        Name n = new Name(data[2], data[3]);
+        for (int j = 0; j < studentData.length; j++) {
+            if(studentData[j] != null && studentData[j].getID().compareTo(pid) == 0) {
+                if (studentData[j].getName().compareTo(n) == 0){
+
+                    valid = true;
+                } else {
+                    return "Warning: Student " + n.toString() + "'s pid belongs to another student";
+                }
+            }
+        }
+        if(valid) {
+            if (!sections[currSec-1].contains(pid)) {
+                sections[currSec-1].insert(pid, n, Integer.parseInt(data[4]), data[5]);
+            }
+        }
+        else {
+            return "Warning: Student " + n.toString() + " is not loaded to section " + currSec + " since he/she doesn't exist in the loaded student records.";
+        }
+
+    }
+    csvReader.close();
+    return ret;
+}
+else {
+    return "Course Load Failed. You have to load Student " + 
+        "Information file first.";
+}
