@@ -68,8 +68,12 @@ public class Coursemanager2 {
                 case "loadstudentdata":{//.data
                     if(parts[1].contains("data"))
                         System.out.println(cm.readStudentDataFile(parts[1]));
-                    else
-                        System.out.println(cm.loadStudentData(parts[1]));
+                    else {
+                        String x = cm.loadStudentData(parts[1]);
+                        if (!x.equals("")) {
+                            System.out.println(x);
+                        }
+                    }
                     break;
                 }//,data
                 case "loadcoursedata": {
@@ -234,12 +238,17 @@ public class Coursemanager2 {
     }
 
     public String merge() {
-        Section mergeSection;
-        if(sections[currSection].isEmpty()) {
-            mergeSection = sections[currSection];
-            for(int i = 0; i < sections.length; i++) {
-                if(sections[i].isEmpty()) {
-                    
+        if(sections[currSection-1].isEmpty()) {//if empty
+            for(int i = 0; i < sections.length; i++) {//loop through sections
+                if(!sections[i].isEmpty()) {//if non empty
+                    for(int j = 0; j < sections[i].currSpot; j++) {//take all students
+                        if(sections[i].students[j] != null) {
+                            Student curr = sections[i].students[j];
+                            System.out.println(curr);
+                            sections[currSection-1].insert(
+                                curr.getID(), curr.getName(), curr.getScore(), curr.getGrade());
+                        }
+                    }
                 }
             }
         }
@@ -250,7 +259,7 @@ public class Coursemanager2 {
         
         
         
-        return("All sections merged at section n");
+        return("All sections merged at section " + currSection);
     }
 
     public String loadStudentData(String filename) throws Exception  {
@@ -275,7 +284,7 @@ public class Coursemanager2 {
     
     public String loadCourseData(String filename) throws IOException {
         if(studentDataLoaded) {
-            System.out.println(filename.split("\\.")[0] + " Course has been successfully loaded.");
+            System.out.print(filename.split("\\.")[0] + " Course has been successfully loaded");
 
             //load and read in the course data from csv
             String row;
@@ -311,22 +320,26 @@ public class Coursemanager2 {
                 for(int i = 0; i < sections.length; i++) {
                     if(sections[i].find(pid) != null && sections[i].find(n) != null) {
                         foundSec = i+1;//then are in section i already
-                        dValid = false;
+                        if(currSec != i+1)
+                            dValid = false;
                     }
                 }
                 if(!eValid) {
-                    System.out.println("Warning: Student " + n.toString() + " is not loaded to section " + currSec + " since he/she doesn't exist in the loaded student records.");
+                    System.out.print("\nWarning: Student " + n.toString() + " is not loaded to section " + currSec + " since he/she doesn't exist in the loaded student records.");
                 }
                 else if(!mValid){
-                    System.out.println("Warning: Student "+ n.toString() +" is not loaded to" + 
-                        "section "+currSec +" since the corresponding pid belongs to another" + 
+                    System.out.print("\nWarning: Student "+ n.toString() +" is not loaded to" + 
+                        " section "+currSec +" since the corresponding pid belongs to another" + 
                         " student.");
                 }
                 else if(!dValid) {
-                    System.out.println("Warning: Student " + n.toString() + " is not loaded to section "+ currSec + " since" +
+                    System.out.print("\nWarning: Student " + n.toString() + " is not loaded to section "+ currSec + " since" +
                         " he/she is already enrolled in section " + foundSec);
                 }
                 else {
+                    if(currSec == foundSec) {
+                        sections[currSec-1].removePid(pid);//remove so we dont duplicate
+                    }
                     sections[currSec-1].insert(pid, n, Integer.parseInt(data[4]), data[5]);//actual add
                 }
                 
@@ -422,7 +435,7 @@ public class Coursemanager2 {
                 prevCommandSuccess = true;
                 sections[currSection-1].insert(pid, n, 0, "F");;
                 currStudent = (Student)sections[currSection-1].find(n);
-                return "" + n + " inserted";
+                return "" + n + " inserted.";
         }
         else {
             return errorMessage;
@@ -697,7 +710,7 @@ public class Coursemanager2 {
     }
     public String stat() {
         String ret = "Statistics of section ";
-        ret += currSection-1;
+        ret += currSection;
         ret += ":";
         int count = 0;
         String[] letterArr = {"A", "A-", "B+", "B", "B-", "C+",
@@ -775,7 +788,9 @@ public class Coursemanager2 {
             }
         }
         for(int i = 0; i < letterArr.length; i++) {
-            ret += "\n" + countArr[i] + " students with grade " + letterArr[i];
+            if(countArr[i] > 0) {
+                ret += "\n" + countArr[i] + " students with grade " + letterArr[i];
+            }
         }
         //how many students in curr section have grade g
         
@@ -818,10 +833,10 @@ public class Coursemanager2 {
      */
     public String findPair(int x) {
         int paircount = 0;
-        String ret = "";
+        String ret = "Students with score difference less than or equal " + x + ":\n";
         Student[] studentpairs = sections[currSection-1].students;
         for (int i = 0; i < sections[currSection-1].currSpot; i++ ) {
-            for (int j = 0; j < sections[currSection-1].currSpot; j++) {
+            for (int j = i+1; j < sections[currSection-1].currSpot; j++) {
                 if (studentpairs[i] != null && studentpairs[j] != null && Math.abs(studentpairs[i].getScore() - studentpairs[j].getScore()) <= x)
                 {
                     paircount++;

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
 /**
@@ -274,10 +275,10 @@ public class BST<T extends Comparable<? super T>>
         // If value is on the current node
         else {
             if (node.getIndex() < index) {
-                node.setLeft(remove(x, node.getLeft(), index));
+                node.setRight(remove(x, node.getRight(), index));
             }
             else if(node.getIndex() > index) {
-                node.setRight(remove(x, node.getRight(), index));
+                node.setLeft(remove(x, node.getLeft(), index));
             }
             else {
              // If there are two children
@@ -472,8 +473,8 @@ public class BST<T extends Comparable<? super T>>
         
     }
     
-    public int[] indexInOrder() {
-        int[] result = new int[actualElements];
+    public ArrayList<Integer> indexInOrder() {
+        ArrayList<Integer> result = new ArrayList<Integer>();
         int count = 0;
         Stack<BinaryNode<T>> myStack = new Stack<BinaryNode<T>>();
         BinaryNode<T> x = root;
@@ -491,11 +492,9 @@ public class BST<T extends Comparable<? super T>>
                     curr = curr.getLeft();
                 }
             }
-            if (count < actualElements)
-            {
-                result[count] = index;
-                count++;   
-            }
+
+            result.add(index);
+            count++;   
         }
         return result;
     }

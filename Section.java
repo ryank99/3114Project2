@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Iterator;
 /**
  * 
@@ -101,6 +102,7 @@ public class Section {
     public void removePid(String pid) {
         int index = getIndex(pid);
         Student curr = students[index];
+        students[index] = null;
         name_roster.remove(curr.getName(), index);
         score_roster.remove(curr.getScore(), index);
         pid_roster.remove(curr.getID(), index);
@@ -148,7 +150,7 @@ public class Section {
     public String toString() {
         String ret = "";
         
-        int[] pidIndexes = pid_roster.indexInOrder();
+        ArrayList<Integer> pidIndexes = pid_roster.indexInOrder();
         ret += "BST by ID:\n";
         for (int index: pidIndexes) {
             Student s = students[index];
@@ -157,7 +159,7 @@ public class Section {
             }
         }
         
-        int[] nameIndexes = name_roster.indexInOrder();
+        ArrayList<Integer> nameIndexes = name_roster.indexInOrder();
         ret += "BST by name:\n";
         for (int index: nameIndexes) {
             Student s = students[index];
@@ -165,7 +167,7 @@ public class Section {
                 ret += s.toString() + "\n";
             }        }
         
-        int[] scoreIndexes = score_roster.indexInOrder();
+        ArrayList<Integer> scoreIndexes = score_roster.indexInOrder();
         ret += "BST by score:\n";
         for (int index: scoreIndexes) {
             Student s = students[index];

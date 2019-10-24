@@ -51,7 +51,7 @@ public class Name implements Comparable<Name> {
      * @return string representation of name
      */
     public String toString() {
-        return first + ' ' + middle + ' ' + last;
+        return first + ' ' + last;
     }
 
     /**
