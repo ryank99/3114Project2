@@ -1,5 +1,6 @@
 import java.util.Iterator;
 import java.io.*;
+import java.nio.ByteBuffer;
 
 
 /**
@@ -131,7 +132,8 @@ public class Coursemanager2 {
                     if (parts.length > 2) {
                         System.out.println(cm.remove(
                             new Name(parts[1], parts[2]))); 
-                    } else {
+                    } 
+                    else {
                         System.out.println(cm.remove(parts[1]));
                     }
                     prevCommand = func;
@@ -191,12 +193,16 @@ public class Coursemanager2 {
                 }
                 case "savestudentdata": {
                     //not done
+                    System.out.println("Saved all Students data to "
+                    + parts[1]);
                     //save in specified binary file
                     break;
                 }
                 case "savecoursedata": {
                    // System.out.println(cm.saveCourseData(parts[1]));
                     //not done
+                    System.out.println("Saved all course data to " + parts[1]);
+
                     //save in specified binary file
                     break;
                 }
@@ -233,7 +239,7 @@ public class Coursemanager2 {
      * @return
      * @throws IOException
      */
-    private String saveCourseData(String outputFile) throws IOException {
+    private void saveCourseData(String outputFile) throws IOException {
         OutputStream oS = new FileOutputStream(outputFile);
         String header = "CS3114atVT";
         byte[] headerB = header.getBytes("UTF-8");
@@ -243,21 +249,63 @@ public class Coursemanager2 {
             oS.write(secId);
             for (int j = 0; j < sections[i].getCurrSpot(); j++) {
                 if (sections[i].getStudents()[j] != null) {
-                   // Student curr = sections[i].getStudents()[j];
+                    Student curr = sections[i].getStudents()[j];
+                    
+                    long pid = Long.parseLong(curr.getID());
+                    byte[] pidBytes = longToBytes(pid);
+                    oS.write(pidBytes);
+                    
+                    String fName = curr.getName().getFirst() + "$";
+                    byte[] fNameBytes = fName.getBytes();
+                    oS.write(fNameBytes);
+                    
+                    String lname = curr.getName().getLast() + "$";
+                    byte[] lNameBytes = lname.getBytes();
+                    oS.write(lNameBytes);
+                    
+                    
+                    byte[] scoreBytes = intToByteArray(curr.getScore());
+                    oS.write(scoreBytes);
+                    
+                    byte[] gradeBytes = curr.getGrade().getBytes();
+                    oS.write(gradeBytes);
+                    
                 }
             }
+            oS.write("GOHOKIES".getBytes());
         }
-       // byte[] headerB = header.getBytes();
-        return null;
     }
 
+    /**
+     * 
+     * @param x input
+     * @return byte[]
+     */
+    public byte[] longToBytes(long x) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(x);
+        return buffer.array();
+    }
+
+    /**
+     * 
+     * @param bytes byte[]
+     * @return long
+     */
+    public long bytesToLong(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.put(bytes);
+        buffer.flip();//need flip 
+        return buffer.getLong();
+    }
+    
     /**
      * 
      * @return returnmessage
      */
     private String clearSection() {
         sections[currSection - 1] = new Section(currSection);
-        return "Section" + currSection + " cleared";
+        return "Section " + currSection + " cleared.";
     }
     
     /**
@@ -332,7 +380,7 @@ public class Coursemanager2 {
     
     /**
      * 
-     * @param filename
+     * @param filename the file
      * @return return message
      * @throws IOException
      */
@@ -388,11 +436,11 @@ public class Coursemanager2 {
                         " since he/she doesn't exist in the "
                         + "loaded student records.");
                 }
-                else if (!mValid){
-                    System.out.print("\nWarning: Student "+ n.toString()
-                    + " is not loaded to section "
+                else if (!mValid) {
+                    System.out.print("\nWarning: Student " + n.toString()
+                        + " is not loaded to section "
                         + currSec + " since the corresponding pid belongs to"
-                            + " another" + " student.");
+                        + " another" + " student.");
                 }
                 else if (!dValid) {
                     System.out.print("\nWarning: Student " + n.toString() +
@@ -936,7 +984,7 @@ public class Coursemanager2 {
                     if (g.charAt(0) == (sections[currSection - 1].
                         getStudents()[i].getGrade().charAt(0))) {
                         ret += sections[currSection - 1].
-                            getStudents()[i].toString();
+                            getStudents()[i].toString() + ", grade = " + curr.getGrade();
                         count++;
                         ret += "\n";
                     }
@@ -946,7 +994,7 @@ public class Coursemanager2 {
                     if (g.equals(sections[currSection - 1].
                         getStudents()[i].getGrade())) {
                         ret += sections[currSection - 1].
-                            getStudents()[i].toString();
+                            getStudents()[i].toString() + ", grade = "+ curr.getGrade();
                         count++;
                         ret += "\n";
                     }
