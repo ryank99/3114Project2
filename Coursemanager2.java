@@ -16,7 +16,7 @@ public class Coursemanager2 {
     private Student currStudent;
     private static Student[] studentData;
     private boolean studentDataLoaded = false;
-    private int curr;
+    private int current;
     
     /**
      * Creates a Coursemanager1 object
@@ -194,12 +194,12 @@ public class Coursemanager2 {
                 case "savestudentdata": {
                     //not done
                     System.out.println("Saved all Students data to "
-                    + parts[1]);
+                        + parts[1]);
                     //save in specified binary file
                     break;
                 }
                 case "savecoursedata": {
-                   // System.out.println(cm.saveCourseData(parts[1]));
+                    cm.saveCourseData(parts[1]);
                     //not done
                     System.out.println("Saved all course data to " + parts[1]);
 
@@ -235,6 +235,41 @@ public class Coursemanager2 {
     
     /**
      * 
+     * @param outputFile file to output to
+     * @throws Exception
+     */
+    private void saveStudentData(String outputFile) throws Exception {
+        OutputStream oS = new FileOutputStream(outputFile);
+        String header = "VTSTUDENTS";
+        oS.write(header.getBytes("UTF-8"));
+        int n = studentData.length;
+        oS.write(intToByteArray(n));
+        for (int i = 0; i < n; n++) {
+            Student temp = studentData[i];
+            
+            long pid = Long.parseLong(temp.getID());
+            byte[] pidBytes = longToBytes(pid);
+            oS.write(pidBytes);
+            
+            String fName = temp.getName().getFirst() + "$";
+            byte[] fNameBytes = fName.getBytes("UTF-8");
+            oS.write(fNameBytes);
+            
+            String mName = temp.getName().getMiddle() + "$";
+            byte[] mNameBytes = mName.getBytes("UTF-8");
+            oS.write(mNameBytes);
+            
+            String lname = temp.getName().getLast() + "$";
+            byte[] lNameBytes = lname.getBytes("UTF-8");
+            oS.write(lNameBytes);
+            
+            oS.write("GOHOKIES".getBytes("UTF-8"));
+        }
+
+    }
+    
+    /**
+     * 
      * @param outputFile
      * @return
      * @throws IOException
@@ -247,6 +282,7 @@ public class Coursemanager2 {
         for (int i = 0; i < sections.length; i++) {
             byte[] secId = intToByteArray(i + 1);
             oS.write(secId);
+            oS.write(intToByteArray(sections[i].getNameRoster().size()));
             for (int j = 0; j < sections[i].getCurrSpot(); j++) {
                 if (sections[i].getStudents()[j] != null) {
                     Student curr = sections[i].getStudents()[j];
@@ -256,18 +292,22 @@ public class Coursemanager2 {
                     oS.write(pidBytes);
                     
                     String fName = curr.getName().getFirst() + "$";
-                    byte[] fNameBytes = fName.getBytes();
+                    byte[] fNameBytes = fName.getBytes("UTF-8");
                     oS.write(fNameBytes);
                     
                     String lname = curr.getName().getLast() + "$";
-                    byte[] lNameBytes = lname.getBytes();
+                    byte[] lNameBytes = lname.getBytes("UTF-8");
                     oS.write(lNameBytes);
                     
                     
                     byte[] scoreBytes = intToByteArray(curr.getScore());
                     oS.write(scoreBytes);
                     
-                    byte[] gradeBytes = curr.getGrade().getBytes();
+                    String g = curr.getGrade();
+                    if(g.length() == 1) {
+                        g += " ";
+                    }
+                    byte[] gradeBytes = g.getBytes();
                     oS.write(gradeBytes);
                     
                 }
@@ -295,7 +335,7 @@ public class Coursemanager2 {
     public long bytesToLong(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.put(bytes);
-        buffer.flip();//need flip 
+        buffer.flip(); 
         return buffer.getLong();
     }
     
@@ -313,7 +353,6 @@ public class Coursemanager2 {
      * @return returnmessage
      */
     private String clearCourseData() {
-        curr = 0;
         sections = new Section[21];
         for (int i = 0; i < sections.length; i++) {
             sections[i] = new Section(i + 1);
@@ -344,10 +383,7 @@ public class Coursemanager2 {
             return ("Sections could only be merged to an empty section." +
                 " Section " + currSection + " is not empty.");
         }
-        
-        
-        
-        return("All sections merged at section " + currSection);
+        return ("All sections merged at section " + currSection);
     }
 
     /**
@@ -369,9 +405,9 @@ public class Coursemanager2 {
                     pid = "0" + pid;
                 }
             }
-            studentData[curr] = new Student(
-                new Name(data[1], data[3]), pid);
-            curr++;
+            studentData[current] = new Student(
+                new Name(data[1], data[3], data[2]), pid);
+            current++;
         }
         csvReader.close();
         //goes through filename and adds all student records
@@ -500,7 +536,7 @@ public class Coursemanager2 {
     
     /**
      * 
-     * @param byte to convert
+     * @param byte to
      * @return byteasint
      */
     public static int byteArrayToInt(byte[] b) 
