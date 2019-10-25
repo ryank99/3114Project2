@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Iterator;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -193,6 +194,7 @@ public class Coursemanager2 {
                 }
                 case "savestudentdata": {
                     //not done
+                    cm.saveStudentData(parts[1]);
                     System.out.println("Saved all Students data to "
                         + parts[1]);
                     //save in specified binary file
@@ -511,27 +513,151 @@ public class Coursemanager2 {
      * @throws IOException
      */
     public String readCourseDataFile(String s) throws IOException {
-        //InputStream iS = new FileInputStream(s);
+        InputStream iS = new FileInputStream(s);
         int currOffset = 0;
-      //  byte[] aB = iS.readAllBytes();
-        byte[] headerBytes = new byte[10];
-        for (int i = 0; i < 10; i++){
-        //    headerBytes[i] = aB[i];
-        }
-        currOffset = 10;
-        String header = new String(headerBytes);
-      //  System.out.println(header);
+        byte[] allBytes = new byte[1000];
+        iS.read(allBytes, currOffset, 10);
+        int prevOffset = currOffset;
+        currOffset+=10;
+        String header = new String(Arrays.copyOfRange(allBytes, prevOffset, currOffset));
         
         for (int i = 0; i < sections.length; i++) {
+            
             byte[] secNum = new byte[4];
-            for (int j = 0; j < 4; j++) {
-             //   secNum[j] = aB[currOffset];
-                currOffset++;
-            }
+            iS.read(allBytes, currOffset, 4);
+            prevOffset = currOffset;
+            currOffset+=4;
+            secNum = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
             int currSec = byteArrayToInt(secNum);
-           // System.out.println(currSec);
+            
+            byte[] numStudents = new byte[4];
+            iS.read(allBytes, currOffset, 4);
+            prevOffset = currOffset;
+            currOffset+=4;
+            numStudents = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+            int students = byteArrayToInt(numStudents);
+            
+            for (int j = 0; j < students; j++) {
+                boolean eValid = false;
+                boolean mValid = false;
+                boolean dValid = true;
+                
+                byte[] pidArray = new byte[8];
+                iS.read(allBytes, currOffset, 8);
+                prevOffset = currOffset;
+                currOffset+=8;
+                pidArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                long pidLong = bytesToLong(pidArray);
+                String pid = String.valueOf(pidLong);
+                if (pid.length() < 9) {
+                    for (int i1 = 0; i1 < 9 - pid.length(); i1++) {
+                        pid = "0" + pid;
+                    }
+                }
+                
+                String fName = "";
+                boolean delimFound = false;
+                while (!delimFound) {
+                    iS.read(allBytes, currOffset, 1);
+                    prevOffset = currOffset;
+                    currOffset+=1;
+                    byte[] fNameArray = new byte[1];
+                    fNameArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                    String c = new String(fNameArray);
+                    if (c.equals("$")) {
+                        delimFound = true;
+                    } else {
+                        fName+= c;
+                    }
+                }
+
+                
+                String lName = "";
+                delimFound = false;
+                while (!delimFound) {
+                    iS.read(allBytes, currOffset, 1);
+                    prevOffset = currOffset;
+                    currOffset+=1;
+                    byte[] lNameArray = new byte[1];
+                    lNameArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                    String c = new String(lNameArray);
+                    if (c.equals("$")) {
+                        delimFound = true;
+                    } else {
+                        lName+= c;
+                    }
+                }
+                
+                Name n = new Name(fName, lName);
+                //check if in student records
+                //check if matching id
+                //check if in another section
+                for (int j1 = 0; j1 < studentData.length; j1++) {
+                    if (studentData[j1] != null) {
+                        if (studentData[j1].getID().compareTo(pid) == 0) {
+                            eValid = true;
+                            if (studentData[j1].getName().compareTo(n) == 0) {
+                                mValid = true;
+                            } 
+                        }
+                    }
+
+                }
+                
+                byte[] scoreArray = new byte[4];
+                iS.read(allBytes, currOffset, 4);
+                prevOffset = currOffset;
+                currOffset+=4;
+                scoreArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                int score = byteArrayToInt(scoreArray);
+                
+                iS.read(allBytes, currOffset, 2);
+                prevOffset = currOffset;
+                currOffset+=2;
+                String grade = new String(Arrays.copyOfRange(allBytes, prevOffset, currOffset));
+                
+                int foundSec = -1;
+                for (int i1 = 0; i1 < sections.length; i1++) {
+                    if (sections[i1].find(pid) != null && 
+                        sections[i1].find(n) != null) {
+                        foundSec = i1 + 1; //then are in section i already
+                        if (currSec != i1 + 1) {
+                            dValid = false;
+                        }
+                    }
+                }
+                if (!eValid) {
+                    System.out.print("\nWarning: Student " + n.toString() +
+                        " is not loaded to section " + currSec + 
+                        " since he/she doesn't exist in the "
+                        + "loaded student records.");
+                }
+                else if (!mValid){
+                    System.out.print("\nWarning: Student "+ n.toString()
+                    + " is not loaded to section "
+                        + currSec + " since the corresponding pid belongs to"
+                            + " another" + " student.");
+                }
+                else if (!dValid) {
+                    System.out.print("\nWarning: Student " + n.toString() +
+                        " is not loaded to section " + currSec + " since" +
+                        " he/she is already enrolled in section " + foundSec);
+                }
+                else {
+                    if (currSec == foundSec) {
+                        sections[currSec - 1].removePid(pid); //remove so we do
+                    }
+                    sections[currSec - 1].insert(
+                        pid, n, score, grade);
+                }
+            }
+            
+            iS.read(allBytes, currOffset, 8);
+            prevOffset = currOffset;
+            currOffset+=8;
         }
-        return "coursename Course has been successfully loaded!";
+        iS.close();
+        return "coursename " + s.split(".data")[0] + " has been successfully loaded!";
     }
     
     /**
@@ -567,12 +693,94 @@ public class Coursemanager2 {
      * @return returnmessage
      * @throws Exception
      */
-    public String readStudentDataFile(String s) throws Exception {
-        FileInputStream stream = new FileInputStream(s);
-        int ch;
-        while ((ch = stream.read()) != -1) {
+    public String readStudentDataFile(String s) throws IOException {
+        InputStream iS = new FileInputStream(s);
+        int currOffset = 0;
+        byte[] allBytes = new byte[1000];
+        iS.read(allBytes, currOffset, 10);
+        int prevOffset = currOffset;
+        currOffset+=10;
+        
+        byte[] recNumArray = new byte[4];
+        iS.read(allBytes, currOffset, 4);
+        prevOffset = currOffset;
+        currOffset+=4;
+        recNumArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+        int recNum = byteArrayToInt(recNumArray);
+        
+        for (int i = 0; i < recNum; i++) {
+            byte[] pidArray = new byte[8];
+            iS.read(allBytes, currOffset, 8);
+            prevOffset = currOffset;
+            currOffset+=8;
+            pidArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+            long pidLong = bytesToLong(pidArray);
+            String pid = String.valueOf(pidLong);
+            if (pid.length() < 9) {
+                for (int i1 = 0; i1 < 9 - pid.length(); i1++) {
+                    pid = "0" + pid;
+                }
+            }
+            
+            String fName = "";
+            boolean delimFound = false;
+            while (!delimFound) {
+                iS.read(allBytes, currOffset, 1);
+                prevOffset = currOffset;
+                currOffset+=1;
+                byte[] fNameArray = new byte[1];
+                fNameArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                String c = new String(fNameArray);
+                if (c.equals("$")) {
+                    delimFound = true;
+                } else {
+                    fName+= c;
+                }
+            }
+            
+            String mName = "";
+            delimFound = false;
+            while (!delimFound) {
+                iS.read(allBytes, currOffset, 1);
+                prevOffset = currOffset;
+                currOffset+=1;
+                byte[] mNameArray = new byte[1];
+                mNameArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                String c = new String(mNameArray);
+                if (c.equals("$")) {
+                    delimFound = true;
+                } else {
+                    mName+= c;
+                }
+            }
+
+            
+            String lName = "";
+            delimFound = false;
+            while (!delimFound) {
+                iS.read(allBytes, currOffset, 1);
+                prevOffset = currOffset;
+                currOffset+=1;
+                byte[] lNameArray = new byte[1];
+                lNameArray = Arrays.copyOfRange(allBytes, prevOffset, currOffset);
+                String c = new String(lNameArray);
+                if (c.equals("$")) {
+                    delimFound = true;
+                } else {
+                    lName+= c;
+                }
+            }
+            
+            iS.read(allBytes, currOffset, 8);
+            prevOffset = currOffset;
+            currOffset+=8;
+            
+            studentData[current] = new Student(
+                new Name(fName, lName, mName), pid);
+            current++;
         }
-        return s + " successfully loaded";
+        iS.close();
+        return s + " has been successfully loaded!";
     }
     
     
