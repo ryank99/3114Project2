@@ -7,7 +7,6 @@
 public class Name implements Comparable<Name> {
     private String first;
     private String last;
-    private String middle;
     
     /**
      * 
@@ -17,19 +16,8 @@ public class Name implements Comparable<Name> {
     public Name(String f, String l) {
         first = f.toLowerCase();
         last = l.toLowerCase();
-        middle = "";
     }
     
-    /**
-     * 
-     * @param f is first
-     * @param l is last
-     */
-    public Name(String f, String m, String l) {
-        first = f.toLowerCase();
-        last = l.toLowerCase();
-        middle = m.toLowerCase();
-    }
     
     /**
      * 

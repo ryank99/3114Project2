@@ -22,6 +22,13 @@ public class Student implements Comparable {
         id = i;
     }
     
+    /**
+     * 
+     * @param n name
+     * @param id pid
+     * @param score score
+     * @param grade grade
+     */
     public Student(Name n, String id, int score, String grade) {
         name = n;
         this.score = score;
@@ -86,6 +93,10 @@ public class Student implements Comparable {
     }
     
 
+    /**
+     * 
+     * @return id
+     */
     public String getID() {
         return id;
     }

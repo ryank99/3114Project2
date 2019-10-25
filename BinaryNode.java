@@ -1,4 +1,4 @@
-
+import java.util.ArrayList;
 
 //-------------------------------------------------------------------------
 /**
@@ -32,17 +32,30 @@ class BinaryNode<T>
         right = null;
     }
     
-    BinaryNode(T theElement, int index){
+    /**
+     * 
+     * @param theElement data
+     * @param index in array
+     */
+    BinaryNode(T theElement, int index) {
         this.index = index;
         element = theElement;
         left = null;
         right = null;
     }
     
+    /**
+     * 
+     * @return the index
+     */
     public int getIndex() {
         return index;
     }
     
+    /**
+     * 
+     * @param n new index
+     */
     public void setIndex(int n) {
         index = n;
     }
@@ -132,5 +145,21 @@ class BinaryNode<T>
             builder.append("\n" + right.toString());
         }
         return builder.toString();
+    }
+    
+    /**
+     * 
+     * @return array of indices
+     */
+    public ArrayList<Integer> indexBuilder() {
+        ArrayList<Integer> builder = new ArrayList<Integer>();
+        if (left != null) {
+            builder.addAll(left.indexBuilder());
+        }
+        if (right != null) {
+            builder.addAll(right.indexBuilder());
+        }
+        builder.add(index);
+        return builder;
     }
 }

@@ -43,6 +43,11 @@ public class BST<T extends Comparable<? super T>>
 
     }
     
+    /**
+     * 
+     * @param x item to insert
+     * @param index in array
+     */
     public void insert(T x, int index) {
         root = insert(x, root, index);
     }
@@ -63,6 +68,11 @@ public class BST<T extends Comparable<? super T>>
         actualElements--;
     }
     
+    /**
+     * 
+     * @param x to remove
+     * @param index in array
+     */
     public void remove(T x, int index) {
         if (x.equals(root.getElement())) {
             makeEmpty();
@@ -106,6 +116,12 @@ public class BST<T extends Comparable<? super T>>
         return elementAt(find(x, root));
     }
     
+    /**
+     * 
+     * @param x to be found
+     * @param index in array
+     * @return elemetn
+     */
     public T find(T x, int index) {
         return elementAt(find(x, root, index));
     }
@@ -173,6 +189,13 @@ public class BST<T extends Comparable<? super T>>
         return node;
     }
     
+    /**
+     * 
+     * @param x to be inserted
+     * @param node currNode
+     * @param index in array
+     * @return recursive
+     */
     private BinaryNode<T> insert(T x, BinaryNode<T> node, int index) {
         if (node == null) {
             elements++;
@@ -189,11 +212,12 @@ public class BST<T extends Comparable<? super T>>
             if (index < node.getIndex()) {
                 node.setLeft(insert(x, node.getLeft(), index));
             }
-            else if (index > node.getIndex()){
+            else if (index > node.getIndex()) {
                 node.setRight(insert(x, node.getRight(), index));
             }
-            else 
+            else {
                 return null;
+            }
         }
         return node;
         
@@ -253,7 +277,13 @@ public class BST<T extends Comparable<? super T>>
         return result;
     }
     
-    
+    /**
+     * 
+     * @param x to be inserted
+     * @param node currnode
+     * @param index in array
+     * @return recursive
+     */
     private BinaryNode<T> remove(T x, BinaryNode<T> node, int index) {
         // This local variable will contain the new root of the subtree,
         // if the root needs to change.
@@ -277,7 +307,7 @@ public class BST<T extends Comparable<? super T>>
             if (node.getIndex() < index) {
                 node.setRight(remove(x, node.getRight(), index));
             }
-            else if(node.getIndex() > index) {
+            else if (node.getIndex() > index) {
                 node.setLeft(remove(x, node.getLeft(), index));
             }
             else {
@@ -290,11 +320,11 @@ public class BST<T extends Comparable<? super T>>
                 }
                 // If there is only one child on the left
                 else if (node.getLeft() != null) {
-                    result = node.getRight();
+                    result = node.getLeft();
                 }
                 // If there is only one child on the right
                 else {
-                    result = node.getLeft();
+                    result = node.getRight();
                 }
             }
             
@@ -373,7 +403,13 @@ public class BST<T extends Comparable<? super T>>
         }
     }
     
-    
+    /**
+     * 
+     * @param x to be inserted
+     * @param node currnode
+     * @param index in array
+     * @return recursive
+     */
     private BinaryNode<T> find(T x, BinaryNode<T> node, int index) {
         if (node == null) {
             return null; // Not found
@@ -441,6 +477,10 @@ public class BST<T extends Comparable<? super T>>
 
         private Stack<BinaryNode<T>> myStack;
         
+        /**
+         * 
+         * @param input binarynode
+         */
         MyIterator(BinaryNode<T> input) {
             myStack = new Stack<BinaryNode<T>>();
             BinaryNode<T> x = input;
@@ -449,7 +489,7 @@ public class BST<T extends Comparable<? super T>>
                 x = x.getLeft();
             }
         }
-        
+
         @Override
         public boolean hasNext() {
             
@@ -473,9 +513,12 @@ public class BST<T extends Comparable<? super T>>
         
     }
     
+    /**
+     * 
+     * @return in order arraylist
+     */
     public ArrayList<Integer> indexInOrder() {
         ArrayList<Integer> result = new ArrayList<Integer>();
-        int count = 0;
         Stack<BinaryNode<T>> myStack = new Stack<BinaryNode<T>>();
         BinaryNode<T> x = root;
         while (x != null) {
@@ -494,13 +537,36 @@ public class BST<T extends Comparable<? super T>>
             }
 
             result.add(index);
-            count++;   
         }
         return result;
     }
     
-    
+    /**
+     * 
+     * @return how many elements
+     */
+    public int size() {
+        int count = 0;
+        Iterator<T> me = (Iterator<T>)this.iterator();
+        while (me.hasNext()) {
+            me.next();
+            count++;
+        }
+        return count;
+    }
 
+    /**
+     * 
+     * @return list of indexes
+     */
+    public ArrayList<Integer> getIndexList() {
+        if (root == null) {
+            return new ArrayList<Integer>();
+        }
+        else {
+            return root.indexBuilder();
+        }    
+    }
 
     @Override
     public Iterator<T> iterator() {

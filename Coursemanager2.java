@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.*;
 
@@ -65,9 +64,10 @@ public class Coursemanager2 {
             String[] parts = line.split("\\s+");
             String func = parts[0];
             switch(func) {
-                case "loadstudentdata":{//.data
-                    if(parts[1].contains("data"))
+                case "loadstudentdata": { //.data
+                    if (parts[1].contains("data")) {
                         System.out.println(cm.readStudentDataFile(parts[1]));
+                    }
                     else {
                         String x = cm.loadStudentData(parts[1]);
                         if (!x.equals("")) {
@@ -75,12 +75,14 @@ public class Coursemanager2 {
                         }
                     }
                     break;
-                }//,data
+                } //,data
                 case "loadcoursedata": {
-                    if(parts[1].contains("data"))
+                    if (parts[1].contains("data")) {
                         System.out.println(cm.readCourseDataFile(parts[1]));
-                    else
+                    }
+                    else {
                         System.out.println(cm.loadCourseData(parts[1]));
+                    }
                     break;
                 }
                 case "section": { 
@@ -91,7 +93,10 @@ public class Coursemanager2 {
                 }
                 case "insert": { 
                     //done
-                    System.out.println(cm.insert(new Name(parts[2].toLowerCase(), parts[3].toLowerCase()), parts[1] ));
+                    System.out.println(cm.insert(new Name(
+                        parts[2].toLowerCase(), 
+                        parts[3].toLowerCase()), 
+                        parts[1] ));
                     prevCommand = func;
                     break;
                 }
@@ -123,8 +128,6 @@ public class Coursemanager2 {
                     break;
                 }
                 case "remove": { 
-                    //not done
-                    //still have to find and print error for mult records trying to remove
                     if (parts.length > 2) {
                         System.out.println(cm.remove(
                             new Name(parts[1], parts[2]))); 
@@ -166,7 +169,7 @@ public class Coursemanager2 {
                 case "list": {
                     //not done
                     System.out.println(cm.list(parts[1]));
-                    //how many students in specific grade level as param
+                    //how many getStudents() in specific grade level as param
                     break;
                 }
                 case "findpair": { 
@@ -192,6 +195,7 @@ public class Coursemanager2 {
                     break;
                 }
                 case "savecoursedata": {
+                   // System.out.println(cm.saveCourseData(parts[1]));
                     //not done
                     //save in specified binary file
                     break;
@@ -200,14 +204,15 @@ public class Coursemanager2 {
                     System.out.println(cm.clearCourseData());
                     break;
                 }
-                case "clearsection":{
+                case "clearsection": {
                     System.out.println(cm.clearSection());
+                    break;
                 }
                 default: {
                     break;
                 }
                 
-            }//end of switch
+            } //end of switch
             
             String s = br.readLine();
             if (s != null) {
@@ -222,38 +227,73 @@ public class Coursemanager2 {
         }
     }
     
-    private String clearSection() {
-        sections[currSection-1] = new Section(currSection);
-        return "Section" + currSection + " cleared";
+    /**
+     * 
+     * @param outputFile
+     * @return
+     * @throws IOException
+     */
+    private String saveCourseData(String outputFile) throws IOException {
+        OutputStream oS = new FileOutputStream(outputFile);
+        String header = "CS3114atVT";
+        byte[] headerB = header.getBytes("UTF-8");
+        oS.write(headerB);
+        for (int i = 0; i < sections.length; i++) {
+            byte[] secId = intToByteArray(i + 1);
+            oS.write(secId);
+            for (int j = 0; j < sections[i].getCurrSpot(); j++) {
+                if (sections[i].getStudents()[j] != null) {
+                   // Student curr = sections[i].getStudents()[j];
+                }
+            }
+        }
+       // byte[] headerB = header.getBytes();
+        return null;
     }
 
+    /**
+     * 
+     * @return returnmessage
+     */
+    private String clearSection() {
+        sections[currSection - 1] = new Section(currSection);
+        return "Section" + currSection + " cleared";
+    }
+    
+    /**
+     * 
+     * @return returnmessage
+     */
     private String clearCourseData() {
         curr = 0;
         sections = new Section[21];
-        //section 21 is temp section for merging
         for (int i = 0; i < sections.length; i++) {
             sections[i] = new Section(i + 1);
         }        
         return "All course data cleared";
     }
 
+    /**
+     * 
+     * @return returnmessage
+     */
     public String merge() {
-        if(sections[currSection-1].isEmpty()) {//if empty
-            for(int i = 0; i < sections.length; i++) {//loop through sections
-                if(!sections[i].isEmpty()) {//if non empty
-                    for(int j = 0; j < sections[i].currSpot; j++) {//take all students
-                        if(sections[i].students[j] != null) {
-                            Student curr = sections[i].students[j];
-                            System.out.println(curr);
-                            sections[currSection-1].insert(
-                                curr.getID(), curr.getName(), curr.getScore(), curr.getGrade());
+        if (sections[currSection - 1].isEmpty()) { //if empty
+            for (int i = 0; i < sections.length; i++) { //loop through
+                if (!sections[i].isEmpty() && i != currSection - 1) { 
+                    for (int j = 0; j < sections[i].getCurrSpot(); j++) { 
+                        if (sections[i].getStudents()[j] != null) {
+                            Student temp = sections[i].getStudents()[j];
+                            sections[currSection - 1].insert(
+                                temp.getID(), temp.getName(),
+                                temp.getScore(), temp.getGrade());
                         }
                     }
                 }
             }
         }
         else {
-            return("Sections could only be merged to an empty section." +
+            return ("Sections could only be merged to an empty section." +
                 " Section " + currSection + " is not empty.");
         }
         
@@ -262,33 +302,49 @@ public class Coursemanager2 {
         return("All sections merged at section " + currSection);
     }
 
+    /**
+     * 
+     * @param filename name of file
+     * @return returnmessage
+     * @throws Exception
+     */
     public String loadStudentData(String filename) throws Exception  {
         studentDataLoaded = true;
         String row;
-        BufferedReader csvReader = new BufferedReader(new FileReader(filename));
+        BufferedReader csvReader =
+            new BufferedReader(new FileReader(filename));
         while ((row = csvReader.readLine()) != null) {
             String[] data = row.split(",");
             String pid = data[0];
-            if(pid.length() < 9) {
-                for(int i = 0; i < 9-pid.length(); i++) {
+            if (pid.length() < 9) {
+                for (int i = 0; i < 9 - pid.length(); i++) {
                     pid = "0" + pid;
                 }
             }
-            studentData[curr] = new Student(new Name(data[1], data[2], data[3]), pid);
+            studentData[curr] = new Student(
+                new Name(data[1], data[3]), pid);
             curr++;
         }
         csvReader.close();
-        //goes through filename and adds all student records to studentRecords BST
+        //goes through filename and adds all student records
         return filename + " successfully loaded";
     }
     
+    /**
+     * 
+     * @param filename
+     * @return return message
+     * @throws IOException
+     */
     public String loadCourseData(String filename) throws IOException {
-        if(studentDataLoaded) {
-            System.out.print(filename.split("\\.")[0] + " Course has been successfully loaded");
+        if (studentDataLoaded) {
+            System.out.print(filename.split("\\.")[0] +
+                " Course has been successfully loaded");
 
             //load and read in the course data from csv
             String row;
-            BufferedReader csvReader = new BufferedReader(new FileReader(filename));
+            BufferedReader csvReader = 
+                new BufferedReader(new FileReader(filename));
             while ((row = csvReader.readLine()) != null) {
                 String[] data = row.split(",");
                 int currSec = Integer.parseInt(data[0]);
@@ -296,8 +352,8 @@ public class Coursemanager2 {
                 boolean mValid = false;
                 boolean dValid = true;
                 String pid = data[1];
-                if(pid.length() < 9) {
-                    for(int i = 0; i < 9-pid.length(); i++) {
+                if (pid.length() < 9) {
+                    for (int i = 0; i < 9 - pid.length(); i++) {
                         pid = "0" + pid;
                     }
                 }
@@ -306,10 +362,10 @@ public class Coursemanager2 {
                 //check if matching id
                 //check if in another section
                 for (int j = 0; j < studentData.length; j++) {
-                    if(studentData[j] != null) {
-                        if(studentData[j].getID().compareTo(pid) == 0) {
+                    if (studentData[j] != null) {
+                        if (studentData[j].getID().compareTo(pid) == 0) {
                             eValid = true;
-                            if (studentData[j].getName().compareTo(n) == 0){
+                            if (studentData[j].getName().compareTo(n) == 0) {
                                 mValid = true;
                             } 
                         }
@@ -317,30 +373,38 @@ public class Coursemanager2 {
 
                 }
                 int foundSec = -1;
-                for(int i = 0; i < sections.length; i++) {
-                    if(sections[i].find(pid) != null && sections[i].find(n) != null) {
-                        foundSec = i+1;//then are in section i already
-                        if(currSec != i+1)
+                for (int i = 0; i < sections.length; i++) {
+                    if (sections[i].find(pid) != null && 
+                        sections[i].find(n) != null) {
+                        foundSec = i + 1; //then are in section i already
+                        if (currSec != i + 1) {
                             dValid = false;
+                        }
                     }
                 }
-                if(!eValid) {
-                    System.out.print("\nWarning: Student " + n.toString() + " is not loaded to section " + currSec + " since he/she doesn't exist in the loaded student records.");
+                if (!eValid) {
+                    System.out.print("\nWarning: Student " + n.toString() +
+                        " is not loaded to section " + currSec + 
+                        " since he/she doesn't exist in the "
+                        + "loaded student records.");
                 }
-                else if(!mValid){
-                    System.out.print("\nWarning: Student "+ n.toString() +" is not loaded to" + 
-                        " section "+currSec +" since the corresponding pid belongs to another" + 
-                        " student.");
+                else if (!mValid){
+                    System.out.print("\nWarning: Student "+ n.toString()
+                    + " is not loaded to section "
+                        + currSec + " since the corresponding pid belongs to"
+                            + " another" + " student.");
                 }
-                else if(!dValid) {
-                    System.out.print("\nWarning: Student " + n.toString() + " is not loaded to section "+ currSec + " since" +
+                else if (!dValid) {
+                    System.out.print("\nWarning: Student " + n.toString() +
+                        " is not loaded to section " + currSec + " since" +
                         " he/she is already enrolled in section " + foundSec);
                 }
                 else {
-                    if(currSec == foundSec) {
-                        sections[currSec-1].removePid(pid);//remove so we dont duplicate
+                    if (currSec == foundSec) {
+                        sections[currSec - 1].removePid(pid); //remove so we do
                     }
-                    sections[currSec-1].insert(pid, n, Integer.parseInt(data[4]), data[5]);//actual add
+                    sections[currSec - 1].insert(
+                        pid, n, Integer.parseInt(data[4]), data[5]);
                 }
                 
                 
@@ -356,30 +420,75 @@ public class Coursemanager2 {
         }
     }
     
-    
+    /**
+     * 
+     * @param s filename
+     * @return returnmessage
+     * @throws IOException
+     */
     public String readCourseDataFile(String s) throws IOException {
-        FileInputStream stream = new FileInputStream(s);
-        DataInputStream nstream = new DataInputStream(stream);
-        String courseName = "";
-        for(int i = 0; i < 10; i++) {
-        courseName += nstream.readChar();
+        //InputStream iS = new FileInputStream(s);
+        int currOffset = 0;
+      //  byte[] aB = iS.readAllBytes();
+        byte[] headerBytes = new byte[10];
+        for (int i = 0; i < 10; i++){
+        //    headerBytes[i] = aB[i];
         }
+        currOffset = 10;
+        String header = new String(headerBytes);
+      //  System.out.println(header);
         
-        byte[] sA = new byte[4];
-        nstream.read(sA);
-        int section = ( ((sA[3] & 0xFF) << 24) | ((sA[2] & 0xFF) << 16) | ((sA[1] & 0xFF) << 8) | (sA[0] & 0xFF));
-        int ch;
-        while((ch=stream.read())!=-1) {
+        for (int i = 0; i < sections.length; i++) {
+            byte[] secNum = new byte[4];
+            for (int j = 0; j < 4; j++) {
+             //   secNum[j] = aB[currOffset];
+                currOffset++;
+            }
+            int currSec = byteArrayToInt(secNum);
+           // System.out.println(currSec);
         }
         return "coursename Course has been successfully loaded!";
     }
-    //this method
+    
+    /**
+     * 
+     * @param byte to convert
+     * @return byteasint
+     */
+    public static int byteArrayToInt(byte[] b) 
+    {
+        return   b[3] & 0xFF |
+                (b[2] & 0xFF) << 8 |
+                (b[1] & 0xFF) << 16 |
+                (b[0] & 0xFF) << 24;
+    }
+    
+    /**
+     * 
+     * @param a int to convert
+     * @return intasbyte
+     */
+    public static byte[] intToByteArray(int a)
+    {
+        return new byte[] {
+            (byte) ((a >> 24) & 0xFF),
+            (byte) ((a >> 16) & 0xFF),   
+            (byte) ((a >> 8) & 0xFF),   
+            (byte) (a & 0xFF)
+        };
+    }
+    /**
+     * 
+     * @param s filename
+     * @return returnmessage
+     * @throws Exception
+     */
     public String readStudentDataFile(String s) throws Exception {
         FileInputStream stream = new FileInputStream(s);
         int ch;
-        while((ch=stream.read())!=-1) {
+        while ((ch = stream.read()) != -1) {
         }
-        return s+ " successfully loaded";
+        return s + " successfully loaded";
     }
     
     
@@ -405,14 +514,16 @@ public class Coursemanager2 {
         prevCommandSuccess = false;
         //we first have to check if in the student data BST
         //then add to all 3 BSTs for the curr section
-        for(int i = 0; i < sections.length; i++) {
-            if(sections[i].contains(pid)) {
+        for (int i = 0; i < sections.length; i++) {
+            if (sections[i].contains(pid)) {
                 if (i == currSection - 1) {
                     currStudent = (Student)sections[i].find(n);
-                    return n.toString() + " is already in section " + currSection;
+                    return n.toString() + 
+                        " is already in section " + currSection;
                 }
-                currStudent = (Student)sections[i].find(n);
-                return n.toString() + " is already registered in a different section";
+                currStudent = (Student) sections[i].find(n);
+                return n.toString() + 
+                    " is already registered in a different section";
             }
         }
         boolean valid = false;
@@ -420,21 +531,23 @@ public class Coursemanager2 {
             " insertion failed. Wrong student information. ID doesn't exist";
         
         for (int j = 0; j < studentData.length; j++) {
-            if(studentData[j] != null && studentData[j].getID().compareTo(pid) == 0) {
+            if (studentData[j] != null && 
+                studentData[j].getID().compareTo(pid) == 0) {
                 if (studentData[j].getName().compareTo(n) == 0){
               
                 valid = true;//found in studentData and name matches up
                 }
                 else {
                     errorMessage = n.toString() +
-                        " insertion failed. Wrong student information. ID belongs to another student";
+                        " insertion failed. Wrong student information. "
+                        + "ID belongs to another student";
                 }
             }
         }
         if(valid) {
                 prevCommandSuccess = true;
-                sections[currSection-1].insert(pid, n, 0, "F");;
-                currStudent = (Student)sections[currSection-1].find(n);
+                sections[currSection - 1].insert(pid, n, 0, "F");;
+                currStudent = (Student)sections[currSection - 1].find(n);
                 return "" + n + " inserted.";
         }
         else {
@@ -447,10 +560,9 @@ public class Coursemanager2 {
      * @param n Name of student to remove
      * @return string output
      */
-    @SuppressWarnings("unchecked")
     public String remove(Name n) {
         //have to remove n from all 3 BSTs in the section
-        if (sections[currSection-1].find(n) == null) {
+        if (sections[currSection - 1].find(n) == null) {
             return "Remove failed. Student " + n.toString() + 
                 " doesn't exist in section " + currSection;
         }
@@ -466,10 +578,9 @@ public class Coursemanager2 {
      * @param pid PID of student to remove
      * @return string output
      */
-    @SuppressWarnings("unchecked")
     public String remove(String pid) {
         //have to remove n from all 3 BSTs in the section
-        Student s = sections[currSection-1].find(pid);
+        Student s = sections[currSection - 1].find(pid);
         if (s == null) {
             return "Remove failed: couldn't find any student with id " + pid;
         }
@@ -504,30 +615,36 @@ public class Coursemanager2 {
         currStudent = x;
         return "Found " + x.toString();
     }
+    
+    /**
+     * 
+     * @param n name to look for
+     * @return returnmessage
+     */
     public String search(Name n) {
         String ret = "Search results for " + n.toString() + ":\n";
         boolean found = false;
         int foundcount = 0;
         Name match = null;
-        Student[] students = sections[currSection-1].students;
-        int end = sections[currSection-1].currSpot;
+        Student[] studentArr = sections[currSection - 1].getStudents();
+        int end = sections[currSection - 1].getCurrSpot();
         for (int i = 0; i < end; i++)
         {
-            if (students[i] != null)
+            if (studentArr[i] != null)
             {
-                Name curr = students[i].getName();
+                Name curr = studentArr[i].getName();
                 if (curr.compareTo(n) == 0) {
                     found = true;
                     match = curr;
                     foundcount++;
-                    ret += students[i].toString() + "\n";
+                    ret += studentArr[i].toString() + "\n";
                 }
             }
         }
         if (found) {
             prevCommandSuccess = false;
             if (foundcount == 1) {
-                currStudent = sections[currSection-1].find(match);
+                currStudent = sections[currSection - 1].find(match);
                 prevCommandSuccess = true;
             }
             ret += n.toString() + " was found in " + foundcount +
@@ -536,14 +653,16 @@ public class Coursemanager2 {
         }
         else {
             prevCommandSuccess = false;
-            ret += n.toString() + " was found in 0 records in section " + currSection;
+            ret += n.toString() + " was found in 0 records in section "
+            + currSection;
             return ret;
         }
 
     }
+    
     /**
-     * Searches for students that have first or last name s
-     * @param s string to query students
+     * Searches for getStudents() that have first or last name s
+     * @param s string to query getStudents()
      * @return string output
      */
     public String multSearch(String s) {
@@ -552,31 +671,31 @@ public class Coursemanager2 {
         boolean found = false;
         int foundcount = 0;
         Name match = null;
-        Student[] students = sections[currSection-1].students;
-        int end = sections[currSection-1].currSpot;
+        Student[] studentArr = sections[currSection - 1].getStudents();
+        int end = sections[currSection - 1].getCurrSpot();
         for (int i = 0; i < end; i++)
         {
-            if (students[i] != null)
+            if (studentArr[i] != null)
             {
-                Name curr = students[i].getName();
+                Name curr = studentArr[i].getName();
                 if (curr.getLast().equals(s)) {
                     found = true;
                     match = curr;
                     foundcount++;
-                    ret += students[i].toString() + "\n";
+                    ret += studentArr[i].toString() + "\n";
                 }
                 else if (curr.getFirst().equals(s)) {
                     found = true;
                     match = curr;
                     foundcount++;
-                    ret += students[i].toString() + "\n";
+                    ret += studentArr[i].toString() + "\n";
                 }
             }
         }
         if (found) {
             prevCommandSuccess = false;
             if (foundcount == 1) {
-                currStudent = sections[currSection-1].find(match);
+                currStudent = sections[currSection - 1].find(match);
                 prevCommandSuccess = true;
             }
             ret += s + " was found in " + foundcount +
@@ -600,14 +719,17 @@ public class Coursemanager2 {
             return "Scores have to be integers in range 0 to 100.";
         }
         else {
-            if ((prevCommand.equals("insert") || prevCommand.equals("search")) && prevCommandSuccess) {
+            if ((prevCommand.equals("insert") || prevCommand.equals("search"))
+                && prevCommandSuccess) {
                 String output = "Update " + currStudent.getName()
                     +  " record, Score = " + s;
                 String pid = currStudent.getID();
-                int index = sections[currSection-1].getIndex(pid);
-                sections[currSection-1].getScoreRoster().remove(currStudent.getScore(), index);
+                int index = sections[currSection - 1].getIndex(pid);
+                sections[currSection - 1].getScoreRoster().
+                remove(currStudent.getScore(), index);
                 currStudent.setScore(s);
-                sections[currSection-1].getScoreRoster().insert(currStudent.getScore(), index);
+                sections[currSection - 1].getScoreRoster().
+                insert(currStudent.getScore(), index);
                 return output;
             }
             return "score command can only be called after an "
@@ -624,7 +746,8 @@ public class Coursemanager2 {
         String ret = "";
         int count = 0;
         @SuppressWarnings("unchecked")
-        Iterator<String> me = sections[currSection - 1].getPidRoster().iterator();
+        Iterator<String> me = 
+        sections[currSection - 1].getPidRoster().iterator();
         while (me.hasNext()) {
             count++;
             me.next();
@@ -635,18 +758,18 @@ public class Coursemanager2 {
         //inorder traversal
     }
     /**
-     * Assigns grades to all students in current section
+     * Assigns grades to all getStudents() in current section
      * @return string output
      */
     @SuppressWarnings("unchecked")
     public String grade() {
-        String ret = "Grading Completed:";
         String[] grades = {"A", "A-", "B+", "B", "B-", "C+",
             "C", "C-", "D+", "D", "D-", "F"};
         int[] gradeCount = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        for(int i = 0; i < sections[currSection-1].currSpot; i++) {
-            if (sections[currSection-1].students[i] != null) {
-                int currScore = sections[currSection-1].students[i].getScore();
+        for(int i = 0; i < sections[currSection - 1].getCurrSpot(); i++) {
+            if (sections[currSection - 1].getStudents()[i] != null) {
+                int currScore = sections[currSection - 1].
+                    getStudents()[i].getScore();
                 String g = "E";
                 if (currScore >= 90) {
                     gradeCount[0]++;
@@ -696,30 +819,29 @@ public class Coursemanager2 {
                     gradeCount[11]++;
                     g = "F";
                 }
-                sections[currSection-1].students[i].setGrade(g);
-            }
-        }
-        for (int i = 0; i < grades.length; i++) {
-            if (gradeCount[i] > 0) {
-                ret += "\n" + gradeCount[i] +
-                    " students with grade " + grades[i];
+                sections[currSection - 1].getStudents()[i].setGrade(g);
             }
         }
         return "grading completed";
         //iterate through BST and asssign grade with switch statement
     }
+    
+    /**
+     * 
+     * @return returnmessage
+     */
     public String stat() {
         String ret = "Statistics of section ";
         ret += currSection;
         ret += ":";
-        int count = 0;
         String[] letterArr = {"A", "A-", "B+", "B", "B-", "C+",
             "C", "C-", "D+", "D", "D-", "F"};
         int[] countArr = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         
-        for(int i = 0; i < sections[currSection-1].currSpot; i++) {
-            if (sections[currSection-1].students[i] != null) {
-                String currGrade = sections[currSection-1].students[i].getGrade();
+        for(int i = 0; i < sections[currSection - 1].getCurrSpot(); i++) {
+            if (sections[currSection - 1].getStudents()[i] != null) {
+                String currGrade = sections[currSection - 1].
+                    getStudents()[i].getGrade();
                 switch(currGrade) {
                     case "A": {
                         countArr[0]++;
@@ -787,36 +909,46 @@ public class Coursemanager2 {
                 }
             }
         }
-        for(int i = 0; i < letterArr.length; i++) {
-            if(countArr[i] > 0) {
-                ret += "\n" + countArr[i] + " students with grade " + letterArr[i];
+        for (int i = 0; i < letterArr.length; i++) {
+            if (countArr[i] > 0) {
+                ret += "\n" + countArr[i] + 
+                    " students with grade " + letterArr[i];
             }
         }
-        //how many students in curr section have grade g
+        //how many getStudents() in curr section have grade g
         
         return ret;
     }
     
+    /**
+     * 
+     * @param g grade to list
+     * @return returnmessage
+     */
     public String list(String g) {
         String ret = "Students with grade " + g + " are:\n";
         int count = 0;
         g = g.toUpperCase();
-        for(int i = 0; i < sections[currSection-1].currSpot; i++) {
-            Student curr = sections[currSection-1].students[i];
-            if(curr != null) {
-                if(g.substring(1).equals("*")){
-                    if(g.charAt(0) == (sections[currSection-1].students[i].getGrade().charAt(0))) {
-                        ret += sections[currSection-1].students[i].toString();
+        for (int i = 0; i < sections[currSection - 1].getCurrSpot(); i++) {
+            Student curr = sections[currSection - 1].getStudents()[i];
+            if (curr != null) {
+                if (g.substring(1).equals("*")){
+                    if (g.charAt(0) == (sections[currSection - 1].
+                        getStudents()[i].getGrade().charAt(0))) {
+                        ret += sections[currSection - 1].
+                            getStudents()[i].toString();
                         count++;
-                        ret+= "\n";
+                        ret += "\n";
                     }
                     
                 }
                 else {
-                    if(g.equals(sections[currSection-1].students[i].getGrade())) {
-                        ret += sections[currSection-1].students[i].toString();
+                    if (g.equals(sections[currSection - 1].
+                        getStudents()[i].getGrade())) {
+                        ret += sections[currSection - 1].
+                            getStudents()[i].toString();
                         count++;
-                        ret+= "\n";
+                        ret += "\n";
                     }
                 }
             }
@@ -826,18 +958,21 @@ public class Coursemanager2 {
         return ret;
     }
     /**
-     * Finds pairs of students with differences 
+     * Finds pairs of getStudents() with differences 
      * in scores less than or equal to x
      * @param x difference in scores
      * @return string output
      */
     public String findPair(int x) {
         int paircount = 0;
-        String ret = "Students with score difference less than or equal " + x + ":\n";
-        Student[] studentpairs = sections[currSection-1].students;
-        for (int i = 0; i < sections[currSection-1].currSpot; i++ ) {
-            for (int j = i+1; j < sections[currSection-1].currSpot; j++) {
-                if (studentpairs[i] != null && studentpairs[j] != null && Math.abs(studentpairs[i].getScore() - studentpairs[j].getScore()) <= x)
+        String ret = "Students with score difference less than or equal "
+        + x + ":\n";
+        Student[] studentpairs = sections[currSection - 1].getStudents();
+        for (int i = 0; i < sections[currSection - 1].getCurrSpot(); i++ ) {
+            for (int j = i+1; j < sections[currSection - 1].getCurrSpot(); j++) {
+                if (studentpairs[i] != null && studentpairs[j] != null 
+                    && Math.abs(studentpairs[i].getScore() - 
+                        studentpairs[j].getScore()) <= x)
                 {
                     paircount++;
                     ret += studentpairs[i].getName().toString() + ", " +
@@ -849,9 +984,6 @@ public class Coursemanager2 {
         return ret + "found " + paircount + " pairs";
     }
 
-    /**
-     * Generates a unique ID for the current section
-     * @return id formatted
-     */
+
 
 }
