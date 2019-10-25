@@ -1,0 +1,55 @@
+/**
+     * 
+     * @param outputFile
+     * @return
+     * @throws IOException
+     */
+    private void saveCourseData(String outputFile) throws IOException {
+        OutputStream oS = new FileOutputStream(outputFile);
+        String header = "CS3114atVT";
+        byte[] headerB = header.getBytes("UTF-8");
+        oS.write(headerB);
+        int numSecs = 0;
+        for (int i = 0; i < sections.length; i++) {
+            if (!sections[i].isEmpty()) {
+                numSecs++;
+            }
+        }
+        byte[] secNum = intToByteArray(numSecs);
+        oS.write(secNum);
+        for (int i = 0; i < sections.length; i++) {
+            if (!sections[i].isEmpty()) {
+                oS.write(intToByteArray(sections[i].getNameRoster().size()));
+                for (int j = 0; j < sections[i].getCurrSpot(); j++) {
+                    if (sections[i].getStudents()[j] != null) {
+                        Student curr = sections[i].getStudents()[j];
+                        
+                        long pid = Long.parseLong(curr.getID());
+                        byte[] pidBytes = longToBytes(pid);
+                        oS.write(pidBytes);
+                        
+                        String fName = curr.getName().getFirst() + "$";
+                        byte[] fNameBytes = fName.getBytes();
+                        oS.write(fNameBytes);
+                        
+                        String lname = curr.getName().getLast() + "$";
+                        byte[] lNameBytes = lname.getBytes();
+                        oS.write(lNameBytes);
+                        
+                        
+                        byte[] scoreBytes = intToByteArray(curr.getScore());
+                        oS.write(scoreBytes);
+                        
+                        String g = curr.getGrade();
+                        if(g.length() == 1) {
+                            g += " ";
+                        }
+                        byte[] gradeBytes = g.getBytes();
+                        oS.write(gradeBytes);
+                        
+                    }
+                }
+                oS.write("GOHOKIES".getBytes());
+            }
+        }
+    }
