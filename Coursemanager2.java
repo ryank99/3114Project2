@@ -23,7 +23,7 @@ public class Coursemanager2 {
      */
     public Coursemanager2() {
         studentData = new Student[500];
-        curr = 0;
+        current = 0;
         sections = new Section[21];
         //section 21 is temp section for merging
         for (int i = 0; i < sections.length; i++) {
