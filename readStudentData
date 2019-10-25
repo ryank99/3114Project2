@@ -1,10 +1,6 @@
-    /**
-     * 
-     * @param s filename
-     * @return returnmessage
-     * @throws IOException
-     */
-    public String readStudentDataFile(String s) throws IOException {
+public String readStudentDataFile(String s) throws IOException {
+        studentDataLoaded = true;
+        
         InputStream iS = new FileInputStream(s);
         int currOffset = 0;
         byte[] allBytes = new byte[1000];
