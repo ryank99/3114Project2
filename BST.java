@@ -61,9 +61,6 @@ public class BST<T extends Comparable<? super T>>
      *            the item to remove.
      */
     public void remove(T x) {
-        if (x.equals(root.getElement())) {
-            makeEmpty();
-        }
         root = remove(x, root);
         actualElements--;
     }
@@ -74,9 +71,6 @@ public class BST<T extends Comparable<? super T>>
      * @param index in array
      */
     public void remove(T x, int index) {
-        if (x.equals(root.getElement())) {
-            makeEmpty();
-        }
         root = remove(x, root, index);
         actualElements--;
     }
