@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  * @author Ryan Kirkpatrick
  * @version 9/26/2019
  */
-public class Coursemanager1 {
+public class Coursemanager2 {
 
     private static Boolean prevCommandSuccess = false;
     private static String prevCommand;
