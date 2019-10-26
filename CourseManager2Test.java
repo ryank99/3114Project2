@@ -20,6 +20,7 @@ public class CourseManager2Test extends student.TestCase {
      * @throws Exception
      */
     public void testSampleInput() throws Exception {
+        
         String[] arguments = new String[] {"sampleinput.txt"};
         Coursemanager2.main(arguments);
         Student ryan = new Student(new Name("Ryan", "Kirkpatrick"), "906088299", 98, "B");
@@ -89,6 +90,7 @@ public class CourseManager2Test extends student.TestCase {
      */
     public void testBinaryTree() {
         BST<Integer> testTree = new BST<Integer>();
+        testTree.toString();
         testTree.insert(5, 6);
         testTree.makeEmpty();
         testTree.insert(5, 7);
@@ -99,9 +101,16 @@ public class CourseManager2Test extends student.TestCase {
         testTree.remove(10,  11);
         testTree.toString();
         testTree.indexInOrder();
+        testTree.find(5);
+        testTree.remove(5);
+        testTree.find(5, 6);
+        testTree.isEmpty();
         testTree.findMin();
         testTree.findMax();
         assertTrue(testTree.size() == 5);
+        testTree.insert(6);
+        testTree.indexInOrder();
+        testTree.getIndexList();
     }
     
     /**
