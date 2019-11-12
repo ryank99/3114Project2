@@ -20,6 +20,12 @@ public class Name implements Comparable<Name> {
         middle = "";
     }
     
+    /**
+     * 
+     * @param f first
+     * @param l last
+     * @param m middle
+     */
     public Name(String f, String l, String m) {
         first = f.toLowerCase();
         last = l.toLowerCase();
@@ -43,6 +49,10 @@ public class Name implements Comparable<Name> {
         return last;
     }
     
+    /**
+     * 
+     * @return middle name
+     */
     public String getMiddle() {
         return middle;
     }
